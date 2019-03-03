@@ -1,0 +1,29 @@
+extends layout
+
+block content
+  //h1(style="color:red")= title+"asdsad"
+  //p Welcome to #{title}
+  //(href=url+'/')
+  .row
+    .text-right.mb-4
+      a(href=url+"/Yeni_Kayıt")
+        button.ml-4.btn.btn-sm.btn-success(type='button')  
+          i.ti-pin-alt.mr-1    
+          ="Kayıt Oluştur"
+    each val in data
+      .col-lg-4.col-sm-6
+        .card
+          .content
+            textarea.jsonArea.w-100.h150(readonly,disabled)=JSON.stringify(val, undefined, 4)  
+            .footer.text-right
+                hr
+                .primaryColor.mr-3.pointer(onclick=`location.href='${url}/${val._id}'`)
+                  i.ti-pencil.mr-1
+                  ="Düzenle"
+                .dangerColor.mr-3.pointer(onclick=`changeDocument("delete","${val._id}","${collection}","")`)
+                  i.ti-na.mr-1
+                  ="Sil"
+                    
+                  
+                  
+    

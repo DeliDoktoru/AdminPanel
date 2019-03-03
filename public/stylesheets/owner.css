@@ -1,0 +1,46 @@
+body {
+  padding: 50px;
+  font: 14px "Lucida Grande", Helvetica, Arial, sans-serif;
+}
+
+.test {
+  color: #00B7FF;
+}
+
+.selectable:hover {
+  background-color: #7CE4FE;
+  
+}
+.pointer{
+  cursor: pointer;
+}
+.h150{
+  height: 150px;
+}
+.w-100{
+  width: 100%;
+}
+
+.h-100{
+  height: 100%;
+}
+.h-80{
+  height: 80%;
+}
+.jsonArea{
+  resize: none;
+  border: none;
+  background-color: white;
+}
+.dangerColor{
+  color: #FF8F5E ;
+}
+.primaryColor{
+  color:#3091B2 ;
+}
+a.dangerColor:hover{
+  color : #FF8F5E ;
+}
+a.primaryColor:hover{
+  color : #3091B2 ;
+}

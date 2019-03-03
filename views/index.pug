@@ -1,0 +1,127 @@
+extends layout
+
+block content
+  //h1(style="color:red")= title+"asdsad"
+  //p Welcome to #{title}  
+  .row
+    .col-lg-3.col-sm-6
+      .card
+        .content
+          .row
+            .col-xs-5
+              .icon-big.icon-warning.text-center
+                i.ti-server
+            .col-xs-7
+              .numbers
+                p Capacity
+                |                                             105GB
+          .footer
+            hr
+            .stats
+              i.ti-reload
+              |  Updated now
+    .col-lg-3.col-sm-6
+      .card
+        .content
+          .row
+            .col-xs-5
+              .icon-big.icon-success.text-center
+                i.ti-wallet
+            .col-xs-7
+              .numbers
+                p Revenue
+                |                                             $1,345
+          .footer
+            hr
+            .stats
+              i.ti-calendar
+              |  Last day
+    .col-lg-3.col-sm-6
+      .card
+        .content
+          .row
+            .col-xs-5
+              .icon-big.icon-danger.text-center
+                i.ti-pulse
+            .col-xs-7
+              .numbers
+                p Errors
+                |                                             23
+          .footer
+            hr
+            .stats
+              i.ti-timer
+              |  In the last hour
+    .col-lg-3.col-sm-6
+      .card
+        .content
+          .row
+            .col-xs-5
+              .icon-big.icon-info.text-center
+                i.ti-twitter-alt
+            .col-xs-7
+              .numbers
+                p Followers
+                |                                             +45
+          .footer
+            hr
+            .stats
+              i.ti-reload
+              |  Updated now
+  .row
+    .col-md-12
+      .card
+        .header
+          h4.title Users Behavior
+          p.category 24 Hours performance
+        .content
+          #chartHours.ct-chart
+          .footer
+            .chart-legend
+              i.fa.fa-circle.text-info
+              |  Open
+              i.fa.fa-circle.text-danger
+              |  Click
+              i.fa.fa-circle.text-warning
+              |  Click Second Time
+            hr
+            .stats
+              i.ti-reload
+              |  Updated 3 minutes ago
+  .row
+    .col-md-6
+      .card
+        .header
+          h4.title Email Statistics
+          p.category Last Campaign Performance
+        .content
+          #chartPreferences.ct-chart.ct-perfect-fourth
+          .footer
+            .chart-legend
+              i.fa.fa-circle.text-info
+              |  Open
+              i.fa.fa-circle.text-danger
+              |  Bounce
+              i.fa.fa-circle.text-warning
+              |  Unsubscribe
+            hr
+            .stats
+              i.ti-timer
+              |  Campaign sent 2 days ago
+    .col-md-6
+      .card
+        .header
+          h4.title 2015 Sales
+          p.category All products including Taxes
+        .content
+          #chartActivity.ct-chart
+          .footer
+            .chart-legend
+              i.fa.fa-circle.text-info
+              |  Tesla Model S
+              i.fa.fa-circle.text-warning
+              |  BMW 5 Series
+            hr
+            .stats
+              i.ti-check
+              |  Data information certified

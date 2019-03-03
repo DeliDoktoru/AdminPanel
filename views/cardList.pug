@@ -1,0 +1,35 @@
+extends layout
+
+block content
+  //h1(style="color:red")= title+"asdsad"
+  //    a(href=url+'/'+val.val1)       
+  //p Welcome to #{title} .selectable 
+  .row
+    .text-right.mb-4
+      a(href=url+"/Yeni_Yığın")
+        button.ml-4.btn.btn-sm.btn-success(type='button') 
+          i.ti-pin-alt.mr-1    
+          ="Yığın Oluştur"
+    each val in data
+      .col-lg-3.col-sm-6
+        .card 
+          .content
+            .row.pointer(onclick=`location.href='${url}/${val.val1}'`)
+              .col-xs-5
+                .icon-big.icon-warning.text-center
+                  i.ti-server
+              .col-xs-7
+                .numbers
+                  p=val.val1
+                  p=val.val2
+              .stats.col-xs-12
+                i.ti-layers-alt
+                =val.val3    
+            .footer.text-right
+              hr
+              .primaryColor.mr-3.pointer(onclick=`location.href='${url}/Yığını_Düzenle?name=${val.val1}'`)
+                i.ti-pencil.mr-1
+                ="Düzenle"
+              .dangerColor.mr-3.pointer(onclick=`changeCollection("delete","${val.val1}","")`)
+                i.ti-na.mr-1
+                ="Sil"
