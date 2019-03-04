@@ -56,8 +56,17 @@ router.get('/database/:collectionName/:id',async function(req, res, next) {
     res.render('jsonViewer', { title: "Yeni Kayıt" ,url:req.url ,data:{} ,collection:req.params.collectionName,id:"",method:"create"}); }
 });
 
+//Form
+router.get('/Sayfa/test',async function(req, res, next) {
+  const db = req.app.locals.db;
+  result=await db.collection("Sayfalar").findOne({'pageName':'Sayfa'});
+  _content=business.inputGenerator(result.content);
+  res.render('form', { title: 'Sayfa' ,url:req.url,content:_content });
+});
 
-
+router.get('/Sayfa',async function(req, res, next) {
+ 
+});
 //Ajax
 router.post('/changeCollection',async function(req, res, next){
   const db = req.app.locals.db;
@@ -67,11 +76,6 @@ router.post('/changeCollection',async function(req, res, next){
     case "update":
       tmp=(await db.collection(_data.oldCollectionName).rename(_data.collectionName));
       status={ok:tmp.collectionName?1:0}
-      if(status.ok!=1)
-        break;
-      //_data.items=JSON.parse(_data.items);
-      //_data.items._id=new ObjectId(_data.id);
-      //status=(await db.collection(_data.collection).insertOne(_data.items)).result;
       text = "Güncellendi!";
       renk="success"
       break;

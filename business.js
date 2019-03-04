@@ -4,6 +4,8 @@ module.exports={
         var txt="";
         _array=_array.sort((a, b) => (a.rank > b.rank) ? 1 : -1)
         for(item of _array){
+            if(item.value==undefined)
+              item.value="";    
             if(item.type=="boolean")
                 item.type="checkbox";
             if(item.type=="checkbox"){
