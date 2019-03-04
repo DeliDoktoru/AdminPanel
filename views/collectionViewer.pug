@@ -2,7 +2,7 @@ extends layout
 
 block content
   .text-right.mb-4
-    button.ml-4.btn.btn-sm.btn-success(type='button',onclick=`changeCollection(${method},${collection})`) 
+    button.ml-4.btn.btn-sm.btn-success(type='button',onclick=`changeCollection('${method}',$("[data-key='collectionName']").val(),$("[data-key='collectionName']").attr("oldValue"),editor.get())`) 
       i.ti-check-box.mr-1    
       ="Kaydet"
     button.ml-4.btn.btn-sm.btn-danger(type='button',onclick=`location.href=backPageUrl`) 
@@ -12,4 +12,10 @@ block content
     .col-md-6
       .form-group
         label Yığın Adı
-        input.form-control.border-input(type='text',data-name="yığınAdı")
+        input.form-control.border-input(type='text',data-key="collectionName",value=collection,oldValue=collection)
+    .col-md-12
+      .form-group
+        label Yığın Özellikleri   
+        #jsoneditor(data=JSON.stringify(options),readOnly=(method=="update"?"true":"false"))  
+
+

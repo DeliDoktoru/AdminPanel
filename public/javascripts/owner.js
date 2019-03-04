@@ -40,6 +40,8 @@ $(function() {
         _id=json._id;
         delete json["_id"];
         var options = {};
+        if(container.getAttribute("readOnly")=="true")
+          options.mode='view';
         editor = new JSONEditor(container, options);
         editor.set(json);
         
@@ -109,15 +111,22 @@ changeDocument=function(_method,_id,_collection,_data){
 
 //>
 //< database collection işlemleri
-changeCollection=function(_method,_collectionName,_options){
+changeCollection=function(_method,_collectionName,_oldCollectionName,_options){
   data={};
 
   data.collectionName=_collectionName;
+  if(_oldCollectionName!="")
+    data.oldCollectionName=_oldCollectionName;
+
   data.method=_method;
 
-  if(_options!="")
+  if(_options!=""){
+    for(val of Object.keys(_options) ){
+      if(_options[val]=="")
+        delete _options[val];
+    } 
     data.options=JSON.stringify(_options);
-
+  }
     _ajax={
       type:"POST", 
       url:"/changeCollection",
