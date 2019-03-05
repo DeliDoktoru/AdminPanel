@@ -47,7 +47,52 @@ $(function() {
         
     }
     //>
-    
+    //<form buttons
+      $("body").delegate("button[action-method]","click",function(){
+        _method=$(this).attr("action-method");
+        if(_method=="addArrayItem"){
+          _target=$(this).attr("action-target");
+          _index=$(`div[data-key='${_target}']>.row`).last().attr("index");
+          if(_index==undefined || _index=="")
+            _index=1;
+          else
+            _index=parseInt(_index)+1;  
+          _item=_contentArray[_target].replaceAll("%index%",_index);
+          $(`div[data-key='${_target}']`).append(_item)
+        }
+        else if(_method=="deleteArrayItem"){
+          _target=$(this).attr("action-target");
+          _index=$(this).attr("index");
+          $.confirm({
+            content:"",
+            theme: 'material',
+            type: 'red',
+            title: 'Emin misiniz?',
+            buttons: {
+                confirm: {
+                  btnClass: 'btn-red',
+                  text: 'Evet',
+                  action: function(){
+                    $(`div[data-key='${_target}']>.row[index=${_index}]`).remove()  
+                  }
+                  
+                },
+                cancel:  {
+                  btnClass: 'btn-default',
+                  text: 'Hayır',
+                  action: function(){
+                  }
+                }
+            }
+          });
+        }
+
+      })
+    //>
+
+
+
+
 });
 //< database document işlemleri
 changeDocument=function(_method,_id,_collection,_data){

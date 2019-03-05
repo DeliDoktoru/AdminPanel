@@ -3,3 +3,6 @@ extends layout
 block content
   .row
     !=content
+block script
+  script.
+    var _contentArray=!{JSON.stringify(contentArray)}

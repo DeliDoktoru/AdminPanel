@@ -57,11 +57,20 @@ router.get('/database/:collectionName/:id',async function(req, res, next) {
 });
 
 //Form
-router.get('/Sayfa/test',async function(req, res, next) {
+router.get('/:pageName/:id',async function(req, res, next) {
   const db = req.app.locals.db;
-  result=await db.collection("Sayfalar").findOne({'pageName':'Sayfa'});
-  _content=business.inputGenerator(result.content);
-  res.render('form', { title: 'Sayfa' ,url:req.url,content:_content });
+  if(req.params.id=="Yeni_Kayıt"){
+    pageInputs=(await db.collection("Sayfalar").findOne({'pageName':req.params.pageName})).content;
+    obj=(await business.inputGenerator(pageInputs,db));
+    res.render('form', { title: 'Yeni Kayıt' ,url:req.url,content:obj.txt,contentArray:obj.contentArray });
+  }else{
+    _data=await db.collection(req.params.pageName).findOne({'_id':new ObjectId(req.params.id)});
+    pageInputs=(await db.collection("Sayfalar").findOne({'pageName':req.params.pageName})).content;
+    result=business.setValuesToinputs(pageInputs,_data);
+    obj=(await business.inputGenerator(result,db));
+    _title=req.params.id;
+    res.render('form', { title: _title ,url:req.url,content:obj.txt,contentArray:obj.contentArray });
+  }  
 });
 
 router.get('/Sayfa',async function(req, res, next) {
