@@ -3,6 +3,8 @@
     setValuesToinputs=function(inputs,values){
         for(var i=0;i<inputs.length;i++){
             if(inputs[i].type=="array"){
+                if(values[inputs[i].key]==undefined)
+                    continue;
                 inputs[i].value=[];
                 for(val of values[inputs[i].key]){
                     inputs[i].value.push(val);
@@ -15,7 +17,36 @@
         }
         return inputs;
     }
-
+    viewGenerator=async function(_page,_db,_url){
+        var _headers="<tr>";
+        var _body="";
+        for(item of _page.content){
+            if(_page.viewable.indexOf(item.key)!=-1)
+            _headers+=`<th>${item.text}</th>`
+        }
+        _headers+="</tr>";
+        var arr=await _db.collection(_page.collection).find({}).toArray();
+        for(val of arr){
+            var tmp=`<tr data-id="${val._id}" onclick="location.href='${_url}/${val._id}'">`; 
+            for(item of _page.viewable){
+                tmp+=`<td>${val[item]}</td>`
+            }
+            tmp+="</tr>";
+            _body+=tmp;
+        }
+        _txt=`
+            <table class="table ">
+                <thead>
+                ${_headers}
+                </thead>
+                <tbody>
+                ${_body}
+                </tbody>
+            </table>
+        
+        `;
+        return  {txt:_txt};
+    }
     inputGenerator=async function(_array,_db){
         var _txt="";
         var _contentArray={};
@@ -37,7 +68,7 @@
                     
                     <div class="form-group">
                         <label> ${item.text} </label>
-                        <select collector class="form-control" data-key="${item.key}">
+                        <select  class="form-control" data-key="${item.key}">
                            ${selectTxt}
                         </select>
                     </div> 
@@ -71,7 +102,7 @@
                 <div class="col-md-${item.size}">
                     <div class="form-group">
                         <label> ${item.text} </label>
-                        <select collector class="form-control" data-key="${item.key}">
+                        <select  class="form-control" data-key="${item.key}">
                            ${selectTxt}
                         </select>
                     </div> 
@@ -85,9 +116,9 @@
                 var tmpObj=await inputGenerator(arr,_db);
                 
                 _contentArray[tmp.key]=`
-                <div class="row pb-1 pt-2 gainsboro" index="%index%" >
+                <div class="row pb-1 pt-2 gainsboro" index="%index%"  >
                     <div class="col-md-12 text-right">
-                        <button action-method="deleteArrayItem" action-target="${item.key}" index="%index%" class="ml-4 btn btn-sm btn-danger" type='button'> <i class="ti-angle-down mr-1"></i>Sil</button>
+                        <button action-method="deleteArrayItem" action-target="${tmp.key}" index="%index%" class="ml-4 btn btn-sm btn-danger" type='button'> <i class="ti-angle-down mr-1"></i>Sil</button>
                     </div>
                     ${tmpObj.txt}
                 </div>
@@ -99,7 +130,7 @@
                 for(val of tmp.value){
                     _arr=setValuesToinputs(arr,val);
                     _fillArrayItems+=`
-                    <div class="row pb-1 pt-2 gainsboro" index="${i}" >
+                    <div class="row pb-1 pt-2 gainsboro card" index="${i}"  >
                         <div class="col-md-12 text-right">
                             <button action-method="deleteArrayItem" action-target="${tmp.key}" index="${i}" class="ml-4 btn btn-sm btn-danger" type='button'> <i class="ti-angle-down mr-1"></i>Sil</button>
                         </div>
@@ -115,7 +146,7 @@
                 <div class="col-md-${item.size}">
                     <div class="form-group">
                         <label> ${item.text} </label>
-                        <div data-key="${item.key}"> 
+                        <div data-key="${item.key}" type="array" style="padding:15px"> 
                             ${_fillArrayItems}
                         </div>
                     </div> 
@@ -130,7 +161,7 @@
                 <div class="col-md-${item.size}">
                     <div class="form-group">
                         <label> ${item.text} </label>
-                        <input collector type="${item.type}" class="border-input form-control" data-key="${item.key}" value="${item.value}"></input>
+                        <input  type="${item.type}" class="border-input form-control" data-key="${item.key}" value="${item.value}"></input>
                     </div>
                 </div>
                     
@@ -142,4 +173,7 @@
     }
 
 
-module.exports={inputGenerator:inputGenerator,setValuesToinputs:setValuesToinputs}
+module.exports={inputGenerator:inputGenerator,
+                setValuesToinputs:setValuesToinputs,
+                viewGenerator:viewGenerator
+            }

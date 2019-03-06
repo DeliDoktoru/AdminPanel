@@ -38,39 +38,16 @@ html
         .sidebar-wrapper
           .logo
             i.ti-crown(style='color: #EB5E28;  font-size: 30px;  display: block;   margin: auto; text-align:center;')
-          ul.nav
-            li
-              a(href='/dashboard')
-                i.ti-panel
-                p Dashboard
-            li
-              a(href='/database')
-                i.ti-user
-                p Database    
-            li
-              a(href='user.html')
-                i.ti-user
-                p User Profile
-            li
-              a(href='table.html')
-                i.ti-view-list-alt
-                p Table List
-            li
-              a(href='typography.html')
-                i.ti-text
-                p Typography
-            li
-              a(href='icons.html')
-                i.ti-pencil-alt2
-                p Icons
-            li
-              a(href='maps.html')
-                i.ti-map
-                p Maps
-            li
-              a(href='notifications.html')
-                i.ti-bell
-                p Notifications
+          form.p-5(action="")
+            .row
+              .col-md-12
+              .form-group
+                label Kullanıcı Adı
+                input.form-control.border-input(type='text',name="user")
+              .col-md-12
+              .form-group
+                abel Şifre
+                input.form-control.border-input(type='password',name="password")    
       .main-panel
         nav.navbar.navbar-default
           .container-fluid
@@ -82,45 +59,11 @@ html
                 span.icon-bar.bar3
               .content-title
             .collapse.navbar-collapse
-              ul.nav.navbar-nav.navbar-right
-                li
-                  a.dropdown-toggle(href='#', data-toggle='dropdown')
-                    i.ti-panel
-                    p Stats
-                li.dropdown
-                  a.dropdown-toggle(href='#', data-toggle='dropdown')
-                    i.ti-bell
-                    p.notification 5
-                    p Notifications
-                    b.caret
-                  ul.dropdown-menu
-                    li
-                      a(href='#') Notification 1
-                    li
-                      a(href='#') Notification 2
-                    li
-                      a(href='#') Notification 3
-                    li
-                      a(href='#') Notification 4
-                    li
-                      a(href='#') Another notification
-                li
-                  a(href='#')
-                    i.ti-settings
-                    p Settings
         .content
           .container-fluid
-            block content
+            img.cover(src="https://media.sheridan.com.au/catalog/product/cache/1/image/1200x800/9df78eab33525d08d6e5fb8d27136e95/i/n/interwoven_wallpaper_shr.jpg")
         footer.footer
           .container-fluid
-            nav.pull-left
-              ul
-                li
-                  a(href='http://blog.creative-tim.com')
-                    | Blog
-                li
-                  a(href='http://www.creative-tim.com/license')
-                    | Licenses
             .copyright.pull-right
               | ©
               script.

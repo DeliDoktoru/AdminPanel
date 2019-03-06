@@ -45,5 +45,20 @@ a.primaryColor:hover{
   color : #3091B2 ;
 }
 .gainsboro{
-  background-color: gainsboro;
+  background-color: gainsboro !important;
+  border: 1px dotted;
+}
+.table thead {
+  background-color: #faefcf;
+}
+.table tbody tr:hover{
+  background-color: #f0a988 !important;
+  cursor: pointer;
+}
+.cover{
+  max-width: 100%;
+  max-height: 100%;
+  object-fit: cover;
+  margin: auto;
+  min-height:100%;
 }

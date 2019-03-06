@@ -1,6 +1,16 @@
 extends layout
 
 block content
+  .text-right.mb-4
+    button.ml-4.btn.btn-sm.btn-danger.float-left(type='button',action-method=`delete`,id=`${id}`,collection=`${collection}`) 
+      i.ti-check-box.mr-1    
+      ="Sil"    
+    button.ml-4.btn.btn-sm.btn-success(type='button',action-method=`${method}`,id=`${id}`,collection=`${collection}`) 
+      i.ti-check-box.mr-1    
+      ="Kaydet"
+    button.ml-4.btn.btn-sm.btn-info(type='button',onclick=`location.href=backPageUrl`) 
+      i.ti-direction.mr-1  
+      ="Vazgeç"
   .row
     !=content
 block script

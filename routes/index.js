@@ -3,10 +3,18 @@ var router = express.Router();
 var ObjectId = require('mongodb').ObjectID;
 var business = require('../business');
 
-// /dashboard
+//login
 router.get('/', function(req, res, next) {
-  res.redirect('/dashboard');
+  res.render('login', { title: 'Express' });
 });
+router.post('/login', function(req, res, next) {
+  const db = req.app.locals.db;
+  res.render('login', { title: 'Express' });
+});
+// /dashboard
+/*router.get('/', function(req, res, next) {
+  res.redirect('/dashboard');
+});*/
 router.get('/dashboard', function(req, res, next) {
   res.render('index', { title: 'Express' });
 });
@@ -49,7 +57,7 @@ router.get('/database/:collectionName',async function(req, res, next) {
 router.get('/database/:collectionName/:id',async function(req, res, next) {
   const db = req.app.locals.db;
   if(req.params.id!="Yeni_Kayıt" && req.params.collectionName!="Yeni_Yığın"){
-    _data=await db.collection(req.params.collectionName).findOne({'_id':new ObjectId(req.params.id)});
+    _data=await db.collection(req.params.collectionName).findOne({'_id': ObjectId(req.params.id)});
     _title=req.params.id;
     res.render('jsonViewer', { title: _title ,url:req.url ,data:_data ,collection:req.params.collectionName,id:req.params.id,method:"update"});} 
   else{
@@ -57,25 +65,53 @@ router.get('/database/:collectionName/:id',async function(req, res, next) {
 });
 
 //Form
+notForm=function(txt){
+  var arr=["public","database","favicon.ico"];
+  for(val of arr)
+  {
+    if(txt==val)
+      return true;
+  }
+  return false;
+}
+
 router.get('/:pageName/:id',async function(req, res, next) {
-  const db = req.app.locals.db;
-  if(req.params.id=="Yeni_Kayıt"){
-    pageInputs=(await db.collection("Sayfalar").findOne({'pageName':req.params.pageName})).content;
-    obj=(await business.inputGenerator(pageInputs,db));
-    res.render('form', { title: 'Yeni Kayıt' ,url:req.url,content:obj.txt,contentArray:obj.contentArray });
-  }else{
-    _data=await db.collection(req.params.pageName).findOne({'_id':new ObjectId(req.params.id)});
-    pageInputs=(await db.collection("Sayfalar").findOne({'pageName':req.params.pageName})).content;
-    result=business.setValuesToinputs(pageInputs,_data);
-    obj=(await business.inputGenerator(result,db));
-    _title=req.params.id;
-    res.render('form', { title: _title ,url:req.url,content:obj.txt,contentArray:obj.contentArray });
+  if(notForm(req.params.pageName))
+    next();
+  else{
+    const db = req.app.locals.db;
+    if(req.params.id=="Yeni_Kayıt"){
+      pages=(await db.collection("Sayfalar").findOne({'pageName':req.params.pageName}));
+      obj=(await business.inputGenerator(pages.content,db));
+      res.render('form', { title: 'Yeni Kayıt' ,url:req.url,content:obj.txt,contentArray:obj.contentArray,collection:pages.collection,id:"",method:"create" });
+    }else{
+      _data=await db.collection(req.params.pageName).findOne({'_id':ObjectId(req.params.id)});
+      pages=(await db.collection("Sayfalar").findOne({'pageName':req.params.pageName}));
+      result=business.setValuesToinputs(pages.content,_data);
+      obj=(await business.inputGenerator(result,db));
+      _title=req.params.id;
+      res.render('form', { title: _title ,url:req.url,content:obj.txt,contentArray:obj.contentArray,collection:pages.collection,id:req.params.id,method:"update" });
+    }  
+  }
+});
+
+router.get('/:pageName',async function(req, res, next) {
+  if(notForm(req.params.pageName))
+    next();
+  else{
+    const db = req.app.locals.db;
+    pages=(await db.collection("Sayfalar").findOne({'pageName':req.params.pageName}));
+    if(pages.viewable==undefined)
+      res.render('error', { message: "Eksik Bilgi!" , error:{status:"404",stack:"Bilgileriniz kontrol edip tekrar deneyiniz!"} });
+    else{
+      obj=(await business.viewGenerator(pages,db,req.url));
+      res.render('table', { title: req.params.pageName ,url:req.url,content:obj.txt});
+    }
   }  
 });
 
-router.get('/Sayfa',async function(req, res, next) {
- 
-});
+
+
 //Ajax
 router.post('/changeCollection',async function(req, res, next){
   const db = req.app.locals.db;
@@ -118,7 +154,7 @@ router.post('/changeDocument',async function(req, res, next){
   var text, renk,status;
   switch (_data.method) {
     case "update":
-      status=(await db.collection(_data.collection).deleteOne({_id: new ObjectId(_data.id)})).result;
+      status=(await db.collection(_data.collection).deleteOne({_id:  ObjectId(_data.id)})).result;
       if(status.ok!=1)
         break;
       _data.items=JSON.parse(_data.items);
@@ -128,7 +164,7 @@ router.post('/changeDocument',async function(req, res, next){
       renk="success"
       break;
     case "delete":
-      status=(await db.collection(_data.collection).deleteOne({_id: new ObjectId(_data.id)})).result;
+      status=(await db.collection(_data.collection).deleteOne({_id:  ObjectId(_data.id)})).result;
       text = "Silindi!";
       renk="success"
       break;
