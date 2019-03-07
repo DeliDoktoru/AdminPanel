@@ -5,16 +5,10 @@ var business = require('../business');
 
 //login
 router.get('/', function(req, res, next) {
-  res.render('login', { title: 'Express' });
+    res.render('login', { title: 'Giriş' });
 });
-router.post('/login', function(req, res, next) {
-  const db = req.app.locals.db;
-  res.render('login', { title: 'Express' });
-});
+
 // /dashboard
-/*router.get('/', function(req, res, next) {
-  res.redirect('/dashboard');
-});*/
 router.get('/dashboard', function(req, res, next) {
   res.render('index', { title: 'Express' });
 });
@@ -66,7 +60,7 @@ router.get('/database/:collectionName/:id',async function(req, res, next) {
 
 //Form
 notForm=function(txt){
-  var arr=["public","database","favicon.ico"];
+  var arr=["public","database","favicon.ico","dashboard","ajax"];
   for(val of arr)
   {
     if(txt==val)
@@ -101,7 +95,7 @@ router.get('/:pageName',async function(req, res, next) {
   else{
     const db = req.app.locals.db;
     pages=(await db.collection("Sayfalar").findOne({'pageName':req.params.pageName}));
-    if(pages.viewable==undefined)
+    if(pages==null || pages.viewable==undefined)
       res.render('error', { message: "Eksik Bilgi!" , error:{status:"404",stack:"Bilgileriniz kontrol edip tekrar deneyiniz!"} });
     else{
       obj=(await business.viewGenerator(pages,db,req.url));
@@ -113,7 +107,47 @@ router.get('/:pageName',async function(req, res, next) {
 
 
 //Ajax
-router.post('/changeCollection',async function(req, res, next){
+router.post('/ajax/login', async function(req, res, next) {
+  const db = req.app.locals.db;
+  var text, renk;
+  _data=req.body;
+  if(_data ==undefined || _data.userName=="" || _data.password==""){
+    text = "Eksik bilgi!";
+    renk="danger" 
+    res.send( {message:text ,status:0,color:renk});
+  }
+  else{
+    _user=(await db.collection("Kullanıcılar").findOne({'userName':_data.userName,'password':_data.password}));
+    if(_user==null){
+      text = "Kullanıcı adı yada şifre hatalı!";
+      renk="danger" 
+      res.send( {message:text ,status:0,color:renk});
+    }
+    else{
+      text = "Giriş Yapılıyor..";
+      renk="success"
+      req.session.user=_user;
+      res.send( {message:text ,status:1,color:renk}); 
+    }
+       
+  }
+});
+router.post('/ajax/exit', async function(req, res, next) {
+  var text, renk;
+  if(req.session.user==undefined || req.session.user._id==undefined){
+    text = "Giriş bilgileriniz bulunamadı!";
+    renk="danger" 
+    res.send( {message:text ,status:0,color:renk});
+  }
+  else{
+    req.session.destroy();
+    text = "Çıkış Yapılıyor..";
+    renk="success"
+    res.send( {message:text ,status:1,color:renk}); 
+  }
+});
+
+router.post('/ajax/changeCollection',async function(req, res, next){
   const db = req.app.locals.db;
   _data=req.body;
   var text, renk,status; 
@@ -148,7 +182,7 @@ router.post('/changeCollection',async function(req, res, next){
   res.send( {message:text ,status:status,color:renk});
 });
 
-router.post('/changeDocument',async function(req, res, next){
+router.post('/ajax/changeDocument',async function(req, res, next){
   const db = req.app.locals.db;
   _data=req.body; 
   var text, renk,status;

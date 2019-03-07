@@ -1,6 +1,6 @@
 html
   head
-  body
+  body.ownImage
     meta(name='viewport', content='width=device-width')
     meta(charset='utf-8')
     link(rel='apple-touch-icon', sizes='76x76', href='/public/images/apple-icon.png')
@@ -32,44 +32,52 @@ html
     link(href='https://cdnjs.cloudflare.com/ajax/libs/jquery-confirm/3.3.2/jquery-confirm.min.css', rel='stylesheet')
     link(href='https://fonts.googleapis.com/css?family=Muli:400,300', rel='stylesheet', type='text/css')
     link(href='/public/stylesheets/themify-icons.css', rel='stylesheet')
-    
-    .wrapper
-      .sidebar(data-background-color='white', data-active-color='danger')
-        .sidebar-wrapper
-          .logo
-            i.ti-crown(style='color: #EB5E28;  font-size: 30px;  display: block;   margin: auto; text-align:center;')
-          form.p-5(action="")
-            .row
-              .col-md-12
-              .form-group
-                label Kullanıcı Adı
-                input.form-control.border-input(type='text',name="user")
-              .col-md-12
-              .form-group
-                abel Şifre
-                input.form-control.border-input(type='password',name="password")    
-      .main-panel
-        nav.navbar.navbar-default
-          .container-fluid
-            .navbar-header
-              button.navbar-toggle(type='button')
-                span.sr-only Toggle navigation
-                span.icon-bar.bar1
-                span.icon-bar.bar2
-                span.icon-bar.bar3
-              .content-title
-            .collapse.navbar-collapse
-        .content
-          .container-fluid
-            img.cover(src="https://media.sheridan.com.au/catalog/product/cache/1/image/1200x800/9df78eab33525d08d6e5fb8d27136e95/i/n/interwoven_wallpaper_shr.jpg")
-        footer.footer
-          .container-fluid
-            .copyright.pull-right
-              | ©
-              script.
-                document.write(new Date().getFullYear())
-
-    
+    .wrapper.w-50.auto.h-auto.fs18
+      .logo
+      i.ti-crown(style='color: #EB5E28;  font-size: 50px;  display: block;   margin: auto; text-align:center;')
+      .row.p-5#form
+        .col-md-12.ownBC.p-3
+          .form-group
+            label Kullanıcı Adı
+            input.form-control.border-input(type='text',name="userName",enforced)
+        .col-md-12.ownBC.p-3
+          .form-group
+            Label Şifre
+            input.form-control.border-input(type='password',name="password",enforced)    
+      .col-md-12.p-3
+        .auto.w-20
+          button.ml-4.btn.btn-lg.btn-muted.btn-fill(onclick="login(); return false")
+            i.ti-user.mr-1    
+            ="Giriş Yap"
+    footer.footer.absulute.right.bottom
+      .container-fluid
+        .copyright.pull-right
+        | ©
+        script.
+          document.write(new Date().getFullYear())
+    script(type='text/javascript').    
+      function login(){
+        if(enforcedControl())
+            return;
+        _userName=$("[name='userName']").val();
+        _password=$("[name='password']").val();
+        var obj={"userName":_userName,"password":MD5(_password)}
+        $.ajax({
+            type:"POST", 
+            url:"/ajax/login",
+            data: obj,
+            dataType: "json", 
+            success:function(result){
+                showNotification('top','right',result.color,result.message);
+                if(result.status)
+                    location.href="/dashboard"
+            },
+            error: function (jqXHR, exception) {
+                console.log(jqXHR);
+                console.log(exception);
+            }
+        });  
+      }    
 
     // Core JS Files
     script(src='/public/javascripts/jquery.min.js', type='text/javascript')
@@ -92,6 +100,6 @@ html
     script(src='/public/javascripts/business.js')
     // owner js
     script(src='/public/javascripts/owner.js')
-    
-    block script
+    // md5
+    script(src='/public/javascripts/md5.min.js')
    

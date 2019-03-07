@@ -128,34 +128,9 @@ demo = {
 
         // To add the marker to the map, call setMap();
         marker.setMap(map);
-    },
+    }
 
-	showNotification: function(from, align,renk,text){
-    var icon="";  
-      
-    switch (renk) {
-      case "success":
-        icon="ti-check"
-        break;
-      case "danger":
-        icon="ti-close"
-        break;
-      default:
-        icon="ti-direction"
-    }  
-    $.notify({
-        icon: icon,
-        message: text
-
-      },{
-          type: renk,
-          timer: 4000,
-          placement: {
-              from: from,
-              align: align
-          }
-      });
-	},
+	,
     initDocumentationCharts: function(){
     //     	init single simple line chart
         var dataPerformance = {

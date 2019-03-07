@@ -68,7 +68,7 @@
                     
                     <div class="form-group">
                         <label> ${item.text} </label>
-                        <select  class="form-control" data-key="${item.key}">
+                        <select type="${item.type}" class="form-control" data-key="${item.key}" ${item.required?"enforced":""}>
                            ${selectTxt}
                         </select>
                     </div> 
@@ -93,7 +93,17 @@
                 else if(item.fixedData!=undefined && item.fixedData!=""){
                     selectItems= (await _db.collection("Sabit Seçim Verileri").findOne({"name":item.fixedData})).content;
                 }
-
+                else if(item.target!=undefined && item.target!=""){
+                    var tmp=await _db.collection(item.target).find({}).toArray();
+                    var viewable=(await _db.collection("Sayfalar").findOne({'collection':item.target})).viewable;
+                    for(val of tmp){
+                        var tmpKey="";
+                        for(val2 of viewable){
+                            tmpKey+=val[val2]+" "        
+                        }
+                        selectItems.push({key:tmpKey,value:val._id});
+                    }
+                }
                 var selectTxt="<option value='' >Seçiniz..</option>";
                 for(val of selectItems){
                     selectTxt+=`<option value="${val.value}" ${item.value==val.value?"selected":""}>${val.key}</option>`
@@ -102,7 +112,7 @@
                 <div class="col-md-${item.size}">
                     <div class="form-group">
                         <label> ${item.text} </label>
-                        <select  class="form-control" data-key="${item.key}">
+                        <select type="${item.type}"  class="form-control" data-key="${item.key}" ${item.required?"enforced":""}>
                            ${selectTxt}
                         </select>
                     </div> 
@@ -155,13 +165,24 @@
                     </div>
                 </div>    
                 `;        
+            }
+            else if(item.type=="password"){
+                _txt+=`
+                <div class="col-md-${item.size}">
+                    <div class="form-group">
+                        <label> ${item.text} </label>
+                        <input  type="${item.type}" class="border-input form-control" data-key="${item.key}" ${item.required?"enforced":""}></input>
+                    </div>
+                </div>
+                    
+                    `;
             }   
             else{
                 _txt+=`
                 <div class="col-md-${item.size}">
                     <div class="form-group">
                         <label> ${item.text} </label>
-                        <input  type="${item.type}" class="border-input form-control" data-key="${item.key}" value="${item.value}"></input>
+                        <input  type="${item.type}" class="border-input form-control" data-key="${item.key}" value="${item.value}" ${item.required?"enforced":""}></input>
                     </div>
                 </div>
                     

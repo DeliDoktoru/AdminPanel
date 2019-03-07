@@ -108,6 +108,10 @@ html
                   a(href='#')
                     i.ti-settings
                     p Settings
+                li
+                  a(href='#' onclick="exit()")
+                    i.ti-shift-left-alt
+                    p Çıkış Yap
         .content
           .container-fluid
             block content
@@ -149,6 +153,8 @@ html
     script(src='/public/javascripts/business.js')
     // owner js
     script(src='/public/javascripts/owner.js')
+    // md5
+    script(src='/public/javascripts/md5.min.js')
     
     block script
    
