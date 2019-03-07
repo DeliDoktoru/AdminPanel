@@ -1,0 +1,28 @@
+li
+              a(href='/database')
+                i.ti-user
+                p Database    
+            li
+              a(href='user.html')
+                i.ti-user
+                p User Profile
+            li
+              a(href='table.html')
+                i.ti-view-list-alt
+                p Table List
+            li
+              a(href='typography.html')
+                i.ti-text
+                p Typography
+            li
+              a(href='icons.html')
+                i.ti-pencil-alt2
+                p Icons
+            li
+              a(href='maps.html')
+                i.ti-map
+                p Maps
+            li
+              a(href='notifications.html')
+                i.ti-bell
+                p Notifications

@@ -74,10 +74,20 @@ app.use(async function(req,res,next){
       for(val of _yetkiGrubu.allowedCollection){
         if(val.collectionId==_ID)
           {
+            //render menu items
+            var _data=[]
+            for(items of _yetkiGrubu.allowedCollection){
+              r=(await db.collection("Sayfalar").findOne({'_id': ObjectId(items.collectionId)}));
+              if(r!=null && r!=undefined)
+                _data.push(r.pageName);
+            }
+            res.locals.menu=_data;
             next();
             return;
           }
       }
+      
+
       res.redirect('/');
     }
   }
