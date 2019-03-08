@@ -95,7 +95,7 @@ router.get('/:pageName',async function(req, res, next) {
   else{
     const db = req.app.locals.db;
     pages=(await db.collection("Sayfalar").findOne({'pageName':req.params.pageName}));
-    if(pages==null || pages.viewable==undefined)
+    if(pages==null )// pages.viewable==undefined
       res.render('error', { message: "Eksik Bilgi!" , error:{status:"404",stack:"Bilgileriniz kontrol edip tekrar deneyiniz!"} });
     else{
       obj=(await business.viewGenerator(pages,db,req.url));

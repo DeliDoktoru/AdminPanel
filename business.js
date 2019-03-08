@@ -20,14 +20,21 @@ var ObjectId = require('mongodb').ObjectID;
     viewHeaderGenerator=async function(_page,_db,_url){
         var _headers="<tr>";
         for(item of _page.content){
-            if(_page.viewable.indexOf(item.key)!=-1){
+            if(item.tableViewable){
                 if(item.type=="select"){
                     var selectItems=[],selectTxt="<option value='' >Seçiniz..</option>";
                     if(item.target!=undefined && item.target!=""){
-                        var re=await _db.collection(item.target).find({}).toArray();
-                        for(val of re){
-                            selectItems.push({key:val.name,value:val._id});
+                        var tmp=await _db.collection(item.target).find({}).toArray();
+                        var re=(await _db.collection("Sayfalar").findOne({'collection':item.target})).content;
+                        for(val of tmp){
+                            var tmpKey="";
+                            for(val2 of re){
+                                if(val2.formViewable)
+                                    tmpKey+=val[val2.key]+" "        
+                            }
+                            selectItems.push({key:tmpKey,value:val._id});
                         }
+                        
                     }
                     else if(item.fixedData!=undefined && item.fixedData!=""){
                         selectItems= (await _db.collection("Sabit Seçim Verileri").findOne({"name":item.fixedData})).content;
@@ -51,26 +58,29 @@ var ObjectId = require('mongodb').ObjectID;
     }
     viewBodyGenerator=async function(_page,_db,_url,_query){
         var _body="";
-        var itemsInfos={};
-        for(item of _page.content){
-            if(_page.viewable.indexOf(item.key)!=-1)
-                itemsInfos[item.key]=item;
-        }
         if(_query==undefined)
             _query={};
         var arr=await _db.collection(_page.collection).find(_query).toArray();
         for(val of arr){
             var tmp=`<tr data-id="${val._id}" onclick="location.href='${_url}/${val._id}'">`; 
-            for(item of _page.viewable){
-                if(itemsInfos[item].type=="select"){
-                    if(itemsInfos[item].target!=undefined && itemsInfos[item].target!=""){
-                        var re=await _db.collection(itemsInfos[item].target).findOne({_id:ObjectId(val[item])});
-                        tmp+=`<td>${re.name}</td>`;
+            for(item of _page.content){
+                if(!item.tableViewable)
+                    continue;
+                if(item.type=="select"){
+                    if(item.target!=undefined && item.target!=""){
+                        var k=await _db.collection(item.target).findOne({_id:ObjectId(val[item.key])});
+                        var re=(await _db.collection("Sayfalar").findOne({'collection':item.target})).content;
+                        var tmpKey="";
+                        for(val2 of re){
+                            if(val2.formViewable)
+                                tmpKey+=k[val2.key]+" "        
+                        }
+                        tmp+=`<td>${tmpKey}</td>`;
                     }
-                    else if(itemsInfos[item].fixedData!=undefined && itemsInfos[item].fixedData!=""){
-                        var re=(await _db.collection("Sabit Seçim Verileri").findOne({"name":itemsInfos[item].fixedData})).content;
+                    else if(item.fixedData!=undefined && item.fixedData!=""){
+                        var re=(await _db.collection("Sabit Seçim Verileri").findOne({"name":item.fixedData})).content;
                         for(i of re){
-                            if(i.value==val[item]){
+                            if(i.value==val[item.key]){
                                 tmp+=`<td>${i.key}</td>`;
                                 break;
                             }
@@ -78,7 +88,7 @@ var ObjectId = require('mongodb').ObjectID;
                     }
                 }
                 else{
-                tmp+=`<td>${val[item]}</td>`;
+                tmp+=`<td>${val[item.key]}</td>`;
                 }
             }
             tmp+="</tr>";
@@ -134,16 +144,14 @@ var ObjectId = require('mongodb').ObjectID;
                 }
                 else if(item.target!=undefined && item.target!=""){
                     var tmp=await _db.collection(item.target).find({}).toArray();
-                    //aşağıdaki kodun parçası
-                    //var viewable=(await _db.collection("Sayfalar").findOne({'collection':item.target})).viewable;
+                    var re=(await _db.collection("Sayfalar").findOne({'collection':item.target})).content;
                     for(val of tmp){
-                        //burası  viewable daki bütün elemanları göstersin diye bir kod parçası gerek yok ama dursun
-                        //var tmpKey="";
-                        //for(val2 of viewable){
-                        //    tmpKey+=val[val2]+" "        
-                        //}
-                        //selectItems.push({key:tmpKey,value:val._id});
-                        selectItems.push({key:val.name,value:val._id});
+                        var tmpKey="";
+                        for(val2 of re){
+                            if(val2.formViewable)
+                                tmpKey+=val[val2.key]+" "        
+                        }
+                        selectItems.push({key:tmpKey,value:val._id});
                     }
                 }
                 var selectTxt="<option value='' >Seçiniz..</option>";

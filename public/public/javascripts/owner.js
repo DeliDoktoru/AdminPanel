@@ -26,7 +26,7 @@ $(function () {
   var arrayText = str.split('/');
   for (var i = 0; i < arrayText.length; i++) {
     if (arrayText[i] != '') {
-      tmp += `●<a class='.navbar-brand' href='${str.substring(0,matches[i])}'>${(arrayText[i].charAt(0).toUpperCase() + arrayText[i].slice(1)).replaceAll("_"," ")} </a>`
+      tmp += `<i class="ti-angle-right"></i><a class='.navbar-brand' href='${str.substring(0,matches[i])}'>${(arrayText[i].charAt(0).toUpperCase() + arrayText[i].slice(1)).replaceAll("_"," ")} </a>`
       links.push(str.substring(0, matches[i]));
     }
   }
