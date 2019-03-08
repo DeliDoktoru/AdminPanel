@@ -124,3 +124,18 @@ a.primaryColor:hover{
     opacity: 0;
   }
 }
+.removeTopPadding{
+  padding: 0px 15px 10px 15px !important;
+}
+th span{
+  padding-left: 30px;
+}
+th [type]{
+  text-align: center;
+  border-radius: 25px;
+  border: 2px dashed red;
+  width: 100%;
+}
+.table tbody tr td{
+  border-right: 2px solid red;
+}

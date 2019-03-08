@@ -99,7 +99,7 @@ router.get('/:pageName',async function(req, res, next) {
       res.render('error', { message: "Eksik Bilgi!" , error:{status:"404",stack:"Bilgileriniz kontrol edip tekrar deneyiniz!"} });
     else{
       obj=(await business.viewGenerator(pages,db,req.url));
-      res.render('table', { title: req.params.pageName ,url:req.url,content:obj.txt});
+      res.render('table', { title: req.params.pageName ,url:req.url,content:obj.txt,collection:pages.collection});
     }
   }  
 });
@@ -219,5 +219,13 @@ router.post('/ajax/changeDocument',async function(req, res, next){
   res.send( {message:text ,status:status,color:renk});
 });
 
+router.post('/ajax/filter',async function(req,res,next){
+  const db = req.app.locals.db;
+  _collectionName=req.body.collection;
+  _filter=JSON.parse(req.body.filter);
+  pages=(await db.collection("Sayfalar").findOne({'collection':_collectionName}));
+  _data=await viewBodyGenerator(pages,db,"/"+pages.pageName,_filter)
+  res.send({status:"ok",data:_data});
+})
 
 module.exports = router;  

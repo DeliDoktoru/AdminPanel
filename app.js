@@ -71,6 +71,7 @@ app.use(async function(req,res,next){
         return;
       }
       _ID=result._id
+      boolean=false;
       for(val of _yetkiGrubu.allowedCollection){
         if(val.collectionId==_ID)
           {
@@ -82,13 +83,14 @@ app.use(async function(req,res,next){
                 _data.push(r.pageName);
             }
             res.locals.menu=_data;
-            next();
-            return;
+            boolean=true;
+            break;;
           }
       }
-      
-
-      res.redirect('/');
+      if(boolean)
+        next();
+      else
+        res.redirect('/');
     }
   }
 });

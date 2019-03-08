@@ -1,4 +1,4 @@
-    
+var ObjectId = require('mongodb').ObjectID;    
     
     setValuesToinputs=function(inputs,values){
         for(var i=0;i<inputs.length;i++){
@@ -17,30 +17,91 @@
         }
         return inputs;
     }
-    viewGenerator=async function(_page,_db,_url){
+    viewHeaderGenerator=async function(_page,_db,_url){
         var _headers="<tr>";
-        var _body="";
         for(item of _page.content){
-            if(_page.viewable.indexOf(item.key)!=-1)
-            _headers+=`<th>${item.text}</th>`
+            if(_page.viewable.indexOf(item.key)!=-1){
+                if(item.type=="select"){
+                    var selectItems=[],selectTxt="<option value='' >Seçiniz..</option>";
+                    if(item.target!=undefined && item.target!=""){
+                        var re=await _db.collection(item.target).find({}).toArray();
+                        for(val of re){
+                            selectItems.push({key:val.name,value:val._id});
+                        }
+                    }
+                    else if(item.fixedData!=undefined && item.fixedData!=""){
+                        selectItems= (await _db.collection("Sabit Seçim Verileri").findOne({"name":item.fixedData})).content;
+                    }
+                    for(val of selectItems){
+                        selectTxt+=`<option value="${val.value}">${val.key}</option>`
+                    } 
+                    _headers+=`  
+                    <th><select type="${item.type}" data-key="${item.key}" >
+                        ${selectTxt}
+                    </select><br><br><span>${item.text}</span></th>`
+                }
+                else
+                    _headers+=`<th><input type="${item.type}" data-key="${item.key}"></input><br><br><span>${item.text}</span></th>`;
+            }
+                
         }
         _headers+="</tr>";
-        var arr=await _db.collection(_page.collection).find({}).toArray();
+        return _headers;
+
+    }
+    viewBodyGenerator=async function(_page,_db,_url,_query){
+        var _body="";
+        var itemsInfos={};
+        for(item of _page.content){
+            if(_page.viewable.indexOf(item.key)!=-1)
+                itemsInfos[item.key]=item;
+        }
+        if(_query==undefined)
+            _query={};
+        var arr=await _db.collection(_page.collection).find(_query).toArray();
         for(val of arr){
             var tmp=`<tr data-id="${val._id}" onclick="location.href='${_url}/${val._id}'">`; 
             for(item of _page.viewable){
-                tmp+=`<td>${val[item]}</td>`
+                if(itemsInfos[item].type=="select"){
+                    if(itemsInfos[item].target!=undefined && itemsInfos[item].target!=""){
+                        var re=await _db.collection(itemsInfos[item].target).findOne({_id:ObjectId(val[item])});
+                        tmp+=`<td>${re.name}</td>`;
+                    }
+                    else if(itemsInfos[item].fixedData!=undefined && itemsInfos[item].fixedData!=""){
+                        var re=(await _db.collection("Sabit Seçim Verileri").findOne({"name":itemsInfos[item].fixedData})).content;
+                        for(i of re){
+                            if(i.value==val[item]){
+                                tmp+=`<td>${i.key}</td>`;
+                                break;
+                            }
+                        }
+                    }
+                }
+                else{
+                tmp+=`<td>${val[item]}</td>`;
+                }
             }
             tmp+="</tr>";
             _body+=tmp;
         }
+        return _body;
+    }
+    viewGenerator=async function(_page,_db,_url,_query){
+        var _txt=""
+        
+        //header
+        header=await viewHeaderGenerator(_page,_db,_url);
+        //body
+        body=await viewBodyGenerator(_page,_db,_url,_query);
+       
+       
         _txt=`
-            <table class="table ">
+            <table class="table">
                 <thead>
-                ${_headers}
+                    ${header}
                 </thead>
                 <tbody>
-                ${_body}
+                    ${body}
                 </tbody>
             </table>
         
@@ -54,29 +115,7 @@
         for(item of _array){
             if(item.value==undefined)
               item.value="";    
-            if(item.type=="boolean")
-                item.type="checkbox";
-            if(item.type=="checkbox"){
-                var selectItems=[{key:"Evet",value:"true"},{key:"Hayır",value:"false"}];
-                var selectTxt="<option value='' >Seçiniz..</option>";
-                for(val of selectItems)
-                {
-                    selectTxt+=`<option value="${val.value}" ${item.value==val.value?"selected":""}>${val.key}</option>`
-                }
-                _txt+=`
-                <div class="col-md-${item.size}">
-                    
-                    <div class="form-group">
-                        <label> ${item.text} </label>
-                        <select type="${item.type}" class="form-control" data-key="${item.key}" ${item.required?"enforced":""}>
-                           ${selectTxt}
-                        </select>
-                    </div> 
-                </div>    
-                `;
-
-            }
-            else if(item.type=="select"){
+            if(item.type=="select"){
                 var selectItems=[];
                 if(item.special!=undefined && item.special!=""){
                     switch(item.special) {
@@ -95,13 +134,16 @@
                 }
                 else if(item.target!=undefined && item.target!=""){
                     var tmp=await _db.collection(item.target).find({}).toArray();
-                    var viewable=(await _db.collection("Sayfalar").findOne({'collection':item.target})).viewable;
+                    //aşağıdaki kodun parçası
+                    //var viewable=(await _db.collection("Sayfalar").findOne({'collection':item.target})).viewable;
                     for(val of tmp){
-                        var tmpKey="";
-                        for(val2 of viewable){
-                            tmpKey+=val[val2]+" "        
-                        }
-                        selectItems.push({key:tmpKey,value:val._id});
+                        //burası  viewable daki bütün elemanları göstersin diye bir kod parçası gerek yok ama dursun
+                        //var tmpKey="";
+                        //for(val2 of viewable){
+                        //    tmpKey+=val[val2]+" "        
+                        //}
+                        //selectItems.push({key:tmpKey,value:val._id});
+                        selectItems.push({key:val.name,value:val._id});
                     }
                 }
                 var selectTxt="<option value='' >Seçiniz..</option>";

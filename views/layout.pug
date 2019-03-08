@@ -38,11 +38,12 @@ html
           .logo
             i.ti-crown(style='color: #EB5E28;  font-size: 30px;  display: block;   margin: auto; text-align:center;')
           ul.nav
-            each val in menu
-              li
-                a(href='/'+val)
-                  i.ti-panel
-                  p=val
+            if menu != null 
+              each val in menu
+                li
+                  a(href='/'+val)
+                    i.ti-panel
+                    p=val
       .main-panel
         nav.navbar.navbar-default
           .container-fluid

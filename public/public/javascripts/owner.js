@@ -199,6 +199,38 @@ function viewToJson(row, data) {
   return data;
 }
 //>
+//<database document filter
+var filter={};
+$("body").delegate("thead>tr>th>[type]","change",function(){
+  _key=$(this).attr("data-key");
+  if($(this).val()=="")
+    delete filter[_key]
+  else{
+    filter[_key]=$(this).val();
+  }
+  collectionName=$("[collection]").attr("collection");
+  applyFilter(collectionName);
+});
+function applyFilter(collectionName){
+  var _data={};
+  _data.collection=collectionName;
+  _data.filter=JSON.stringify(filter);
+
+  $.ajax({
+    type:"POST", 
+    url:"/ajax/filter",
+    dataType: "json", 
+    data: _data,
+    success:function(result){
+       $(".table tbody").html(result.data);
+    },
+    error: function (jqXHR, exception) {
+        console.log(jqXHR);
+        console.log(exception);
+    }
+}); 
+}
+//>
 //< database document işlemleri
 changeDocument = function (_method, _id, _collection, _data,goBackPage) {
   if(_method!="delete" && enforcedControl())

@@ -9,9 +9,7 @@ block content
   .row
     .col-md-12
       .card
-        .header
-        .content.table-responsive.table-full-width  
+        .content.table-responsive.table-full-width.removeTopPadding(collection=collection)  
           !=content
 block script
   script.
-    console.log("sa")
