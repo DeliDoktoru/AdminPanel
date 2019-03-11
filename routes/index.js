@@ -1,11 +1,18 @@
 var express = require('express');
 var router = express.Router();
-var ObjectId = require('mongodb').ObjectID;
 var business = require('../business');
-
+var pmongo = require('promised-mongo');
+var config=require('../config');
+var k = pmongo(config.database.url+config.database.dataBaseName);
 //login
-router.get('/', function(req, res, next) {
-    res.render('login', { title: 'Giriş' });
+router.get('/',async function(req, res, next) {
+  const db = req.app.locals.db;
+  k.runCommand({ping:1}).then(function(res) {
+    if(res.ok) console.log("we're up");
+  }).catch(function(err){
+    if(err) console.log("we aren't up", err);
+  });
+  res.render('login', { title: 'Giriş' });
 });
 
 // /dashboard
@@ -17,12 +24,13 @@ router.get('/dashboard', function(req, res, next) {
 router.get('/database',async function(req, res, next) {
   const db = req.app.locals.db;
   data = [];
+  //tmp=db.command({'listCollections':1});
   tmp=await db.listCollections().toArray();
   for (element of tmp) {
     data.push({
       val1:element.name,
-      val2:(await db.collection(element.name).stats()).size +" Bytes",
-      val3:await db.collection(element.name).countDocuments() +" öğe var." 
+      val2:(await db[element.name].stats()).size +" Bytes",
+      val3:await db[element.name].countDocuments() +" öğe var." 
     });  
   }
   res.render('cardList', { title: 'Database' ,url:req.url,data :data });
@@ -43,7 +51,7 @@ router.get('/database/:collectionName',async function(req, res, next) {
     }  
   else{
     const db = req.app.locals.db;
-    _data=await db.collection(req.params.collectionName).find({}).toArray();
+    _data=await db[req.params.collectionName].find({}).toArray();
     _title=req.params.collectionName.charAt(0).toUpperCase() + req.params.collectionName.slice(1)
     res.render('jsonList', { title: _title ,url:req.url ,data:_data,collection:req.params.collectionName });
   }
@@ -51,7 +59,7 @@ router.get('/database/:collectionName',async function(req, res, next) {
 router.get('/database/:collectionName/:id',async function(req, res, next) {
   const db = req.app.locals.db;
   if(req.params.id!="Yeni_Kayıt" && req.params.collectionName!="Yeni_Yığın"){
-    _data=await db.collection(req.params.collectionName).findOne({'_id': ObjectId(req.params.id)});
+    _data=await db[req.params.collectionName].findOne({'_id': pmongo.ObjectId(req.params.id)});
     _title=req.params.id;
     res.render('jsonViewer', { title: _title ,url:req.url ,data:_data ,collection:req.params.collectionName,id:req.params.id,method:"update"});} 
   else{
@@ -75,12 +83,12 @@ router.get('/:pageName/:id',async function(req, res, next) {
   else{
     const db = req.app.locals.db;
     if(req.params.id=="Yeni_Kayıt"){
-      pages=(await db.collection("Sayfalar").findOne({'pageName':req.params.pageName}));
+      pages=(await db["Sayfalar"].findOne({'pageName':req.params.pageName}));
       obj=(await business.inputGenerator(pages.content,db));
       res.render('form', { title: 'Yeni Kayıt' ,url:req.url,content:obj.txt,contentArray:obj.contentArray,collection:pages.collection,id:"",method:"create" });
     }else{
-      _data=await db.collection(req.params.pageName).findOne({'_id':ObjectId(req.params.id)});
-      pages=(await db.collection("Sayfalar").findOne({'pageName':req.params.pageName}));
+      _data=await db[req.params.pageName].findOne({'_id':pmongo.ObjectId(req.params.id)});
+      pages=(await db["Sayfalar"].findOne({'pageName':req.params.pageName}));
       result=business.setValuesToinputs(pages.content,_data);
       obj=(await business.inputGenerator(result,db));
       _title=req.params.id;
@@ -94,7 +102,7 @@ router.get('/:pageName',async function(req, res, next) {
     next();
   else{
     const db = req.app.locals.db;
-    pages=(await db.collection("Sayfalar").findOne({'pageName':req.params.pageName}));
+    pages=(await db["Sayfalar"].findOne({'pageName':req.params.pageName}));
     if(pages==null )// pages.viewable==undefined
       res.render('error', { message: "Eksik Bilgi!" , error:{status:"404",stack:"Bilgileriniz kontrol edip tekrar deneyiniz!"} });
     else{
@@ -117,7 +125,7 @@ router.post('/ajax/login', async function(req, res, next) {
     res.send( {message:text ,status:0,color:renk});
   }
   else{
-    _user=(await db.collection("Kullanıcılar").findOne({'userName':_data.userName,'password':_data.password}));
+    _user=(await db["Kullanıcılar"].findOne({'userName':_data.userName,'password':_data.password}));
     if(_user==null){
       text = "Kullanıcı adı yada şifre hatalı!";
       renk="danger" 
@@ -153,13 +161,13 @@ router.post('/ajax/changeCollection',async function(req, res, next){
   var text, renk,status; 
   switch (_data.method) {
     case "update":
-      tmp=(await db.collection(_data.oldCollectionName).rename(_data.collectionName));
+      tmp=(await db[_data.oldCollectionName].rename(_data.collectionName));
       status={ok:tmp.collectionName?1:0}
       text = "Güncellendi!";
       renk="success"
       break;
     case "delete":
-      tmp=await db.collection(_data.collectionName).drop();
+      tmp=await db[_data.collectionName].drop();
       status={ok:tmp?1:0}
       text = "Silindi!";
       renk="success"
@@ -188,33 +196,46 @@ router.post('/ajax/changeDocument',async function(req, res, next){
   var text, renk,status;
   switch (_data.method) {
     case "update":
-      status=(await db.collection(_data.collection).deleteOne({_id:  ObjectId(_data.id)})).result;
-      if(status.ok!=1)
-        break;
-      _data.items=JSON.parse(_data.items);
-      _data.items._id=new ObjectId(_data.id);
-      status=(await db.collection(_data.collection).insertOne(_data.items)).result;
-      text = "Güncellendi!";
-      renk="success"
+      try {
+        status=(await db[_data.collection].remove({_id:  _data.id}));
+        _data.items=JSON.parse(_data.items);
+        _data.items._id=pmongo.ObjectId(_data.id);
+        status=(await db[_data.collection].insert(_data.items));
+        text = "Güncellendi!";
+        status.ok=1
+      } catch (error) {
+        status.ok=0;
+        text = error;
+      }
       break;
     case "delete":
-      status=(await db.collection(_data.collection).deleteOne({_id:  ObjectId(_data.id)})).result;
-      text = "Silindi!";
-      renk="success"
+      try{
+        status=(await db[_data.collection].remove({_id:  pmongo.ObjectId(_data.id)}));
+        text = "Silindi!";
+      }catch(error){
+        status.ok=0;
+        text = error;
+      }
       break;
     case "create":
-      _data.items=JSON.parse(_data.items);
-      status=(await db.collection(_data.collection).insertOne(_data.items)).result;
-      text = "Oluşturuldu!";
-      renk="success"
+      try {
+        _data.items=JSON.parse(_data.items);
+        status=(await db[_data.collection].insert(_data.items));
+        status.ok=1;
+        text = "Oluşturuldu!";
+      } catch (error) {
+        status.ok=0;
+        text = error;
+      }
       break;
     default:
       text = "Eksik bilgi!";
-      renk="danger" 
   }
-  if(status.ok!=1){
-    text="Hata Oluştu"; 
+  if(status.ok == undefined || status.ok!=1){
     renk="danger" 
+  }
+  else{
+    renk="success" 
   }
   res.send( {message:text ,status:status,color:renk});
 });
@@ -223,7 +244,7 @@ router.post('/ajax/filter',async function(req,res,next){
   const db = req.app.locals.db;
   _collectionName=req.body.collection;
   _filter=JSON.parse(req.body.filter);
-  pages=(await db.collection("Sayfalar").findOne({'collection':_collectionName}));
+  pages=(await db["Sayfalar"].findOne({'collection':_collectionName}));
   _data=await viewBodyGenerator(pages,db,"/"+pages.pageName,_filter)
   res.send({status:"ok",data:_data});
 })

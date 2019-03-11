@@ -1,4 +1,4 @@
-var ObjectId = require('mongodb').ObjectID;    
+var pmongo = require('promised-mongo'); 
     
     setValuesToinputs=function(inputs,values){
         for(var i=0;i<inputs.length;i++){
@@ -68,7 +68,7 @@ var ObjectId = require('mongodb').ObjectID;
                     continue;
                 if(item.type=="select"){
                     if(item.target!=undefined && item.target!=""){
-                        var k=await _db.collection(item.target).findOne({_id:ObjectId(val[item.key])});
+                        var k=await _db.collection(item.target).findOne({_id:pmongo.ObjectId(val[item.key])});
                         var re=(await _db.collection("Sayfalar").findOne({'collection':item.target})).content;
                         var tmpKey="";
                         for(val2 of re){
@@ -176,7 +176,7 @@ var ObjectId = require('mongodb').ObjectID;
                 var tmpObj=await inputGenerator(arr,_db);
                 
                 _contentArray[tmp.key]=`
-                <div class="row pb-1 pt-2 gainsboro" index="%index%"  >
+                <div class="row pb-1 pt-2 gainsboro card col-md-${item.size}  index="%index%"  >
                     <div class="col-md-12 text-right">
                         <button action-method="deleteArrayItem" action-target="${tmp.key}" index="%index%" class="ml-4 btn btn-sm btn-danger" type='button'> <i class="ti-angle-down mr-1"></i>Sil</button>
                     </div>
@@ -190,7 +190,7 @@ var ObjectId = require('mongodb').ObjectID;
                 for(val of tmp.value){
                     _arr=setValuesToinputs(arr,val);
                     _fillArrayItems+=`
-                    <div class="row pb-1 pt-2 gainsboro card" index="${i}"  >
+                    <div class="row pb-1 pt-2 gainsboro card col-md-${item.size}" index="${i}"  >
                         <div class="col-md-12 text-right">
                             <button action-method="deleteArrayItem" action-target="${tmp.key}" index="${i}" class="ml-4 btn btn-sm btn-danger" type='button'> <i class="ti-angle-down mr-1"></i>Sil</button>
                         </div>
@@ -203,7 +203,7 @@ var ObjectId = require('mongodb').ObjectID;
                 //recursive işlemler bitince tmpden geri alıyorum
                 item=tmp;
                 _txt+=`
-                <div class="col-md-${item.size}">
+                <div class="col-md-12">
                     <div class="form-group">
                         <label> ${item.text} </label>
                         <div data-key="${item.key}" type="array" style="padding:15px"> 

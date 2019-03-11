@@ -191,7 +191,14 @@ function viewToJson(row, data) {
 
     } else if ($(this).attr("type") == "password") {
       data[_key] = MD5($(this).val());
-    } else {
+    }else if($(this).attr("type") == "select"){
+      if($(this).val()=="true")
+        data[_key]=true;
+      else if($(this).val()=="false")
+        data[_key]=false;
+      else
+        data[_key]=$(this).val();
+    }else {
       data[_key] = $(this).val();
     }
 
