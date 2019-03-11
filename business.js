@@ -130,11 +130,20 @@ var pmongo = require('promised-mongo');
                 if(item.special!=undefined && item.special!=""){
                     switch(item.special) {
                         case "allCollections":
-                          var tmp= await _db.listCollections().toArray();
-                          for(val of tmp){
-                            selectItems.push({key: val.name,value: val.name});
-                          }
-                          break;
+                            var MongoClient = require("mongodb").MongoClient;
+                            var config=require('./config');
+                            MongoClient.connect("mongodb://"+config.database.url, { useNewUrlParser: true },async function(err, client){
+                                if (err) 
+                                console.log(err);
+                                else {
+                                db=client.db(config.database.dataBaseName);
+                                var tmp= await _db.listCollections().toArray();
+                                    for(val of tmp){
+                                        selectItems.push({key: val.name,value: val.name});
+                                    }
+                                }
+                            });
+                            break;
                         default:
                           // code block
                       }
@@ -242,8 +251,7 @@ var pmongo = require('promised-mongo');
         }
         return {txt:_txt,contentArray:_contentArray};
     }
-
-
+    
 module.exports={inputGenerator:inputGenerator,
                 setValuesToinputs:setValuesToinputs,
                 viewGenerator:viewGenerator

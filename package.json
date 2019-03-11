@@ -16,5 +16,9 @@
     "morgan": "~1.9.0",
     "promised-mongo": "^1.2.0",
     "pug": "2.0.0-beta11"
+  },
+  "devDependencies": {
+    "babel-preset-env": "^1.7.0",
+    "babel-register": "^6.26.0"
   }
 }

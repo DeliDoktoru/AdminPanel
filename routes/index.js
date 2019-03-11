@@ -2,16 +2,9 @@ var express = require('express');
 var router = express.Router();
 var business = require('../business');
 var pmongo = require('promised-mongo');
-var config=require('../config');
-var k = pmongo(config.database.url+config.database.dataBaseName);
+
 //login
 router.get('/',async function(req, res, next) {
-  const db = req.app.locals.db;
-  k.runCommand({ping:1}).then(function(res) {
-    if(res.ok) console.log("we're up");
-  }).catch(function(err){
-    if(err) console.log("we aren't up", err);
-  });
   res.render('login', { title: 'Giriş' });
 });
 
@@ -22,18 +15,27 @@ router.get('/dashboard', function(req, res, next) {
 
 // /database
 router.get('/database',async function(req, res, next) {
-  const db = req.app.locals.db;
-  data = [];
-  //tmp=db.command({'listCollections':1});
-  tmp=await db.listCollections().toArray();
-  for (element of tmp) {
-    data.push({
-      val1:element.name,
-      val2:(await db[element.name].stats()).size +" Bytes",
-      val3:await db[element.name].countDocuments() +" öğe var." 
-    });  
-  }
-  res.render('cardList', { title: 'Database' ,url:req.url,data :data });
+  var MongoClient = require("mongodb").MongoClient;
+  var config=require('../config');
+  MongoClient.connect("mongodb://"+config.database.url, { useNewUrlParser: true },async function(err, client){
+    if (err) 
+      console.log(err);
+    else {
+      db=client.db(config.database.dataBaseName);
+      data = [];
+      tmp=await db.listCollections().toArray();
+      for (element of tmp) {
+        data.push({
+          val1:element.name,
+          val2:(await db.collection(element.name).stats()).size +" Bytes",
+          val3:await db.collection(element.name).countDocuments() +" öğe var." 
+        });  
+      }
+      res.render('cardList', { title: 'Database' ,url:req.url,data :data });
+    }
+  });
+ 
+  
 }); 
 
 router.get('/database/:collectionName',async function(req, res, next) {
@@ -41,10 +43,18 @@ router.get('/database/:collectionName',async function(req, res, next) {
     res.render('collectionViewer', { title: 'Yeni Yığın' ,url:req.url,method:"create",collection:"",options:{} });
   else if(req.params.collectionName=="Yığını_Düzenle"){
     if(req.query.name!=undefined){
-      const db = req.app.locals.db;
-      _options=(await db.command({'listCollections': 1 ,"filter":{"name":req.query.name}})).cursor.firstBatch[0].options
-      _title=req.query.name.charAt(0).toUpperCase() + req.query.name.slice(1);
-      res.render('collectionViewer', { title: _title ,url:req.url,method:"update",collection:req.query.name,options:_options  });
+      var MongoClient = require("mongodb").MongoClient;
+      var config=require('../config');
+      MongoClient.connect("mongodb://"+config.database.url, { useNewUrlParser: true },async function(err, client){
+        if (err) 
+          console.log(err);
+        else {
+          db=client.db(config.database.dataBaseName);
+          _options=(await db.command({'listCollections': 1 ,"filter":{"name":req.query.name}})).cursor.firstBatch[0].options
+          _title=req.query.name.charAt(0).toUpperCase() + req.query.name.slice(1);
+          res.render('collectionViewer', { title: _title ,url:req.url,method:"update",collection:req.query.name,options:_options  });
+        }
+      });
     }
     else
       res.render('error', { message: "Eksik Bilgi!" , error:{status:"404",stack:"Bilgileriniz kontrol edip tekrar deneyiniz!"} });
