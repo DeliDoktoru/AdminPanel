@@ -1,5 +1,7 @@
 const config={
   database: {
+    user:"SuperUser",
+    pwd:"secret",
     url: 'localhost:27017/',
     dataBaseName:'x'
   },
