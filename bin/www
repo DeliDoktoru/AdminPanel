@@ -17,6 +17,8 @@ try{
   app.locals.db = db;
   console.log("Database Connection success..");
   setUpTriggers(db);
+  
+
 }catch(e){
 	console.log('database error', e)
 }

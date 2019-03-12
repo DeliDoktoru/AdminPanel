@@ -7,14 +7,38 @@ var session = require('express-session');
 var indexRouter = require('./routes/index');
 var usersRouter = require('./routes/users');
 var app = express();
+var fs=require("fs");
 var pmongo = require('promised-mongo');
 // view engine setup
 app.set('views', path.join(__dirname, 'views'));
 app.set('view engine', 'pug');
 
 //morgan loger customize
-app.use(logger('dev', {
-  skip: function (req, res) { return req.url.search("public")!=-1  }
+//file
+var accessLogStream = fs.createWriteStream(path.join(__dirname, 'access.log'), { flags: 'a' })
+app.use(logger(function (tokens, req, res) {
+  return [
+    tokens.method(req, res),
+    decodeURIComponent(tokens.url(req, res)),
+    tokens.status(req, res),
+    tokens.res(req, res, 'content-length'), '-',
+    tokens['response-time'](req, res), 'ms'
+  ].join(' ')
+}, {
+  skip: function (req, res) { return req.url.search("public")!=-1  },
+  stream: accessLogStream 
+}));
+//console
+app.use(logger(function (tokens, req, res) {
+  return [
+    tokens.method(req, res),
+    decodeURIComponent(tokens.url(req, res)),
+    tokens.status(req, res),
+    tokens.res(req, res, 'content-length'), '-',
+    tokens['response-time'](req, res), 'ms'
+  ].join(' ')
+}, {
+  skip: function (req, res) { return req.url.search("public")!=-1  },
 }));
 
 app.use(session({
@@ -35,10 +59,6 @@ function checkAllowed(txt){
   return false;
 }
 app.use(async function(req,res,next){
-  next();
-  return;
-
-
   if(checkAllowed(req.url)){
     next();
     return;
@@ -86,7 +106,7 @@ app.use(async function(req,res,next){
             }
             res.locals.menu=_data;
             boolean=true;
-            break;;
+            break;
           }
       }
       if(boolean)

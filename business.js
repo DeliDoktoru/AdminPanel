@@ -1,5 +1,5 @@
 var pmongo = require('promised-mongo'); 
-    
+var helperDriver= require("./mongoNativeDriverHelper");
     setValuesToinputs=function(inputs,values){
         for(var i=0;i<inputs.length;i++){
             if(inputs[i].type=="array"){
@@ -130,19 +130,10 @@ var pmongo = require('promised-mongo');
                 if(item.special!=undefined && item.special!=""){
                     switch(item.special) {
                         case "allCollections":
-                            var MongoClient = require("mongodb").MongoClient;
-                            var config=require('./config');
-                            MongoClient.connect("mongodb://"+config.database.url, { useNewUrlParser: true },async function(err, client){
-                                if (err) 
-                                console.log(err);
-                                else {
-                                db=client.db(config.database.dataBaseName);
-                                var tmp= await _db.listCollections().toArray();
-                                    for(val of tmp){
-                                        selectItems.push({key: val.name,value: val.name});
-                                    }
-                                }
-                            });
+                            var tmp= (await helperDriver.command({'listCollections': 1 })).cursor.firstBatch
+                            for(val of tmp){
+                                selectItems.push({key: val.name,value: val.name});
+                            }
                             break;
                         default:
                           // code block

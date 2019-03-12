@@ -2,6 +2,7 @@ var express = require('express');
 var router = express.Router();
 var business = require('../business');
 var pmongo = require('promised-mongo');
+var helperDriver= require("../mongoNativeDriverHelper");
 
 //login
 router.get('/',async function(req, res, next) {
@@ -15,27 +16,17 @@ router.get('/dashboard', function(req, res, next) {
 
 // /database
 router.get('/database',async function(req, res, next) {
-  var MongoClient = require("mongodb").MongoClient;
-  var config=require('../config');
-  MongoClient.connect("mongodb://"+config.database.url, { useNewUrlParser: true },async function(err, client){
-    if (err) 
-      console.log(err);
-    else {
-      db=client.db(config.database.dataBaseName);
-      data = [];
-      tmp=await db.listCollections().toArray();
-      for (element of tmp) {
-        data.push({
-          val1:element.name,
-          val2:(await db.collection(element.name).stats()).size +" Bytes",
-          val3:await db.collection(element.name).countDocuments() +" öğe var." 
-        });  
-      }
-      res.render('cardList', { title: 'Database' ,url:req.url,data :data });
-    }
-  });
- 
-  
+  data = [];
+  const db = req.app.locals.db;
+  tmp=(await helperDriver.command({'listCollections': 1 })).cursor.firstBatch;
+  for (element of tmp) {
+    data.push({
+      val1:element.name,
+      val2:(await db[element.name].stats()).size +" Bytes",
+      val3:(await db[element.name].stats()).count +" öğe var." 
+    });  
+  }
+  res.render('cardList', { title: 'Database' ,url:req.url,data :data });
 }); 
 
 router.get('/database/:collectionName',async function(req, res, next) {
@@ -43,18 +34,9 @@ router.get('/database/:collectionName',async function(req, res, next) {
     res.render('collectionViewer', { title: 'Yeni Yığın' ,url:req.url,method:"create",collection:"",options:{} });
   else if(req.params.collectionName=="Yığını_Düzenle"){
     if(req.query.name!=undefined){
-      var MongoClient = require("mongodb").MongoClient;
-      var config=require('../config');
-      MongoClient.connect("mongodb://"+config.database.url, { useNewUrlParser: true },async function(err, client){
-        if (err) 
-          console.log(err);
-        else {
-          db=client.db(config.database.dataBaseName);
-          _options=(await db.command({'listCollections': 1 ,"filter":{"name":req.query.name}})).cursor.firstBatch[0].options
-          _title=req.query.name.charAt(0).toUpperCase() + req.query.name.slice(1);
-          res.render('collectionViewer', { title: _title ,url:req.url,method:"update",collection:req.query.name,options:_options  });
-        }
-      });
+      _options=(await helperDriver.command({'listCollections': 1 ,"filter":{"name":req.query.name}})).cursor.firstBatch[0].options
+      _title=req.query.name.charAt(0).toUpperCase() + req.query.name.slice(1);
+      res.render('collectionViewer', { title: _title ,url:req.url,method:"update",collection:req.query.name,options:_options  });
     }
     else
       res.render('error', { message: "Eksik Bilgi!" , error:{status:"404",stack:"Bilgileriniz kontrol edip tekrar deneyiniz!"} });
@@ -168,34 +150,42 @@ router.post('/ajax/exit', async function(req, res, next) {
 router.post('/ajax/changeCollection',async function(req, res, next){
   const db = req.app.locals.db;
   _data=req.body;
-  var text, renk,status; 
-  switch (_data.method) {
-    case "update":
-      tmp=(await db[_data.oldCollectionName].rename(_data.collectionName));
-      status={ok:tmp.collectionName?1:0}
-      text = "Güncellendi!";
-      renk="success"
-      break;
-    case "delete":
-      tmp=await db[_data.collectionName].drop();
-      status={ok:tmp?1:0}
-      text = "Silindi!";
-      renk="success"
-      break;
-    case "create":
-      _data.options=JSON.parse(_data.options);
-      tmp=(await db.createCollection(_data.collectionName, _data.options));
-      status={ok:tmp.collectionName?1:0}
-      text = "Oluşturuldu!"; 
-      renk="success"
-      break;
-    default:
-      text = "Eksik bilgi!";
-      renk="danger" 
-  }
-  if(status.ok!=1){
-    text="Hata Oluştu"; 
+  var text, renk,status={};
+  try {
+    switch (_data.method) {
+      case "update":
+        (await db[_data.oldCollectionName].rename(_data.collectionName));
+        text = "Güncellendi!";
+        status.ok=1
+        break;
+      case "delete":
+        await db[_data.collectionName].drop();
+        text = "Silindi!";
+        status.ok=1
+        break;
+      case "create":
+        _data.options=JSON.parse(_data.options);
+        (await db.createCollection(_data.collectionName, _data.options));
+        text = "Oluşturuldu!"; 
+        status.ok=1
+        break;
+      default:
+        text = "Eksik bilgi!";
+    }
+  } catch (error) {
+    status.ok=0;
+    if(error.message!=undefined)
+      text=error.message;
+    else
+      text = error;
+  } 
+  
+  
+  if(status.ok == undefined || status.ok!=1){
     renk="danger" 
+  }
+  else{
+    renk="success" 
   }
   res.send( {message:text ,status:status,color:renk});
 });
@@ -203,44 +193,39 @@ router.post('/ajax/changeCollection',async function(req, res, next){
 router.post('/ajax/changeDocument',async function(req, res, next){
   const db = req.app.locals.db;
   _data=req.body; 
-  var text, renk,status;
-  switch (_data.method) {
-    case "update":
-      try {
-        status=(await db[_data.collection].remove({_id:  _data.id}));
-        _data.items=JSON.parse(_data.items);
-        _data.items._id=pmongo.ObjectId(_data.id);
-        status=(await db[_data.collection].insert(_data.items));
-        text = "Güncellendi!";
-        status.ok=1
-      } catch (error) {
-        status.ok=0;
-        text = error;
-      }
-      break;
-    case "delete":
-      try{
-        status=(await db[_data.collection].remove({_id:  pmongo.ObjectId(_data.id)}));
-        text = "Silindi!";
-      }catch(error){
-        status.ok=0;
-        text = error;
-      }
-      break;
-    case "create":
-      try {
-        _data.items=JSON.parse(_data.items);
-        status=(await db[_data.collection].insert(_data.items));
-        status.ok=1;
-        text = "Oluşturuldu!";
-      } catch (error) {
-        status.ok=0;
-        text = error;
-      }
-      break;
-    default:
-      text = "Eksik bilgi!";
+  var text, renk,status={};
+  try{
+    if((await helperDriver.command({'listCollections': 1 ,"filter":{"name":_data.collection}})).cursor.firstBatch.length === 0)
+      throw "Böyle Bir Yığın Bulunmamaktadır!"
+    switch (_data.method) {
+      case "update":
+          (await db[_data.collection].remove({_id:  pmongo.ObjectId(_data.id)},{user:req.session.user,db:db,collection:_data.collection}));
+          _data.items=JSON.parse(_data.items);
+          _data.items._id=pmongo.ObjectId(_data.id);
+          (await db[_data.collection].insert(_data.items,{user:req.session.user,db:db,collection:_data.collection}));
+          text = "Güncellendi!";
+          status.ok=1
+        break;
+      case "delete":
+          (await db[_data.collection].remove({_id:  pmongo.ObjectId(_data.id)},{user:req.session.user,db:db,collection:_data.collection}));
+          text = "Silindi!";
+          status.ok=1
+        break;
+      case "create":
+          _data.items=JSON.parse(_data.items);
+          (await db[_data.collection].insert(_data.items,{user:req.session.user,db:db,collection:_data.collection}));
+          status.ok=1;
+          text = "Oluşturuldu!";
+        break;
+      default:
+        text = "Eksik bilgi!";
+    }
+  }catch (error) {
+    status.ok=0;
+    text = error;
   }
+
+  
   if(status.ok == undefined || status.ok!=1){
     renk="danger" 
   }

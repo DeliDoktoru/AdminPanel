@@ -270,7 +270,7 @@ changeDocument = function (_method, _id, _collection, _data,goBackPage) {
       else
         location.href = backPageUrl;
 
-      console.log(result);
+      console.log(JSON.stringify(result));
     }
   }
 
@@ -335,7 +335,7 @@ changeCollection = function (_method, _collectionName, _oldCollectionName, _opti
       else
         location.href = backPageUrl;
 
-      console.log(result);
+      console.log(JSON.stringify(result));
     }
   }
 
