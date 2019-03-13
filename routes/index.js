@@ -33,6 +33,7 @@ router.get('/database/:collectionName',async function(req, res, next) {
     res.render('collectionViewer', { title: 'Yeni Yığın' ,url:req.url,method:"create",collection:"",options:{} });
   else if(req.params.collectionName=="Yığını_Düzenle"){
     if(req.query.name!=undefined){
+      const db = req.app.locals.db;
       _options=(await db.command({'listCollections': 1 ,"filter":{"name":req.query.name}})).cursor.firstBatch[0].options
       _title=req.query.name.charAt(0).toUpperCase() + req.query.name.slice(1);
       res.render('collectionViewer', { title: _title ,url:req.url,method:"update",collection:req.query.name,options:_options  });
@@ -165,7 +166,7 @@ router.post('/ajax/changeCollection',async function(req, res, next){
       case "create":
         _data.options=JSON.parse(_data.options);
         (await db.createCollection(_data.collectionName, _data.options));
-        text = "Oluşturuldu! \n Lütfen tetikleyicinin aktif olması için sistemi baştan başlatın!"; 
+        text = "Oluşturuldu!"; 
         status.ok=1
         break;
       default:
@@ -194,7 +195,7 @@ router.post('/ajax/changeDocument',async function(req, res, next){
   _data=req.body; 
   var text, renk,status={};
   try{
-    await checkAllow(req.session.user,db,_data.collection);
+    //await checkAllow(req.session.user,db,_data.collection);
     if((await db.command({'listCollections': 1 ,"filter":{"name":_data.collection}})).cursor.firstBatch.length === 0)
       throw "Böyle Bir Yığın Bulunmamaktadır!"
     switch (_data.method) {

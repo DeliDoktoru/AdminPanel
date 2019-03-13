@@ -177,10 +177,21 @@ var ObjectId = require('mongodb').ObjectID;
                 if(item.special!=undefined && item.special!=""){
                     switch(item.special) {
                         case "subPage":
-                            //var c=(await _db.collection("Sayfalar").findOne({'collection':'Sayfalar'})).content;
-                            //arr=(c.find(x => x.key === 'content').items).filter(x => x.special != 'subPage' || x.special==undefined);
-                            //tmpObj=await inputGenerator(arr,_db);
-                            tmpObj="";
+                            //recursive saklıyalım
+                            var kk=_contentArray;
+                            var c=(await _db.collection("Sayfalar").findOne({'collection':'Sayfalar'})).content;
+                            arr=(c.find(x => x.key === 'content').items).filter(x => x.special != 'subPage' || x.special==undefined);
+                            tmpObj=await inputGenerator(arr,_db);
+                            _contentArray=kk;
+                            _contentArray[tmp.key]=`
+                            <div class="row pb-1 pt-2 gainsboro card col-md-${tmp.size}  index="%index%"  >
+                                <div class="col-md-12 text-right">
+                                    <button action-method="deleteArrayItem" action-target="${tmp.key}" index="%index%" class="ml-4 btn btn-sm btn-danger" type='button'> <i class="ti-angle-down mr-1"></i>Sil</button>
+                                </div>
+                                ${tmpObj.txt}
+                            </div>
+                            `;
+                            _contentArray=Object.assign(_contentArray,tmpObj.contentArray);
                             break;
                         default:
                           // code block
@@ -191,19 +202,20 @@ var ObjectId = require('mongodb').ObjectID;
                         throw "Parçalar bulunamadı"
                     arr=item.items;
                     tmpObj=await inputGenerator(arr,_db);
+                    _contentArray[tmp.key]=`
+                    <div class="row pb-1 pt-2 gainsboro card col-md-${item.size}  index="%index%"  >
+                        <div class="col-md-12 text-right">
+                            <button action-method="deleteArrayItem" action-target="${tmp.key}" index="%index%" class="ml-4 btn btn-sm btn-danger" type='button'> <i class="ti-angle-down mr-1"></i>Sil</button>
+                        </div>
+                        ${tmpObj.txt}
+                    </div>
+                    `;
+                    _contentArray=Object.assign(_contentArray,tmpObj.contentArray);
                 }
                 
                 
             
-                _contentArray[tmp.key]=`
-                <div class="row pb-1 pt-2 gainsboro card col-md-${item.size}  index="%index%"  >
-                    <div class="col-md-12 text-right">
-                        <button action-method="deleteArrayItem" action-target="${tmp.key}" index="%index%" class="ml-4 btn btn-sm btn-danger" type='button'> <i class="ti-angle-down mr-1"></i>Sil</button>
-                    </div>
-                    ${tmpObj.txt}
-                </div>
-                `;
-                _contentArray=Object.assign(_contentArray,tmpObj.contentArray);
+             
                 var _fillArrayItems="";
                 //burda tmp kullandım item yerine !!
                 var i=1;
