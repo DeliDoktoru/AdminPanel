@@ -8,7 +8,7 @@ var indexRouter = require('./routes/index');
 var usersRouter = require('./routes/users');
 var app = express();
 var fs=require("fs");
-var pmongo = require('promised-mongo');
+var ObjectId = require('mongodb').ObjectID;
 // view engine setup
 app.set('views', path.join(__dirname, 'views'));
 app.set('view engine', 'pug');
@@ -59,6 +59,8 @@ function checkAllowed(txt){
   return false;
 }
 app.use(async function(req,res,next){
+  next();
+  return;
   if(checkAllowed(req.url)){
     next();
     return;
@@ -79,7 +81,7 @@ app.use(async function(req,res,next){
         res.redirect('/');
         return;
       }
-      _yetkiGrubu=await db["Yetki Grupları"].findOne({'_id': pmongo.ObjectId(_grupId)});
+      _yetkiGrubu=await db.collection("Yetki Grupları").findOne({'_id': ObjectId(_grupId)});
       if(_yetkiGrubu==null){
         res.redirect('/');
         return;
@@ -87,7 +89,7 @@ app.use(async function(req,res,next){
       var str = decodeURIComponent(req.url).substring(1);
       if (str.search('/') != -1)
         str = str.substring(0, str.search('/'));
-      result=(await db["Sayfalar"].findOne({'pageName': str}));
+      result=(await db.collection("Sayfalar").findOne({'pageName': str}));
       if(result==null){
         res.redirect('/');
         return;
@@ -100,7 +102,7 @@ app.use(async function(req,res,next){
             //render menu items
             var _data=[]
             for(items of _yetkiGrubu.allowedCollection){
-              r=(await db["Sayfalar"].findOne({'_id': pmongo.ObjectId(items.collectionId)}));
+              r=(await db.collection("Sayfalar").findOne({'_id': ObjectId(items.collectionId)}));
               if(r!=null && r!=undefined)
                 _data.push(r.pageName);
             }

@@ -7,25 +7,19 @@
 var app = require('../app');
 var debug = require('debug')('adminpanel:server');
 var http = require('http');
-var setUpTriggers=require('../collectionTriggers');
 //Özel ayarları tutmak için config dosyamız
 var config=require('../config');
 //database bağlantımızı sağlıyalım
-var pmongo = require('promised-mongo');
-var db = pmongo(config.database.url+config.database.dataBaseName);
-try{
-  app.locals.db = db;
-  console.log("Database Connection success..");
-  setUpTriggers(db);
-  
-
-}catch(e){
-	console.log('database error', e)
-}
-
-
-
-
+var MongoClient = require('mongodb').MongoClient;
+MongoClient.connect(config.database.url, { useNewUrlParser: true },function(err, client){
+  if (err) 
+    console.log(err);
+  else {
+    _db=client.db(config.database.dataBaseName);
+    app.locals.db = _db
+    console.log("Database Connection success..");
+  }
+});
 
 
   

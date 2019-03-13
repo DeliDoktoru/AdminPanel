@@ -1,6 +1,30 @@
+
+
 var editor;
 var backPageUrl;
+//pagination sıra ve max
+var pageIndex = 0, total = 5;
+var pr = document.querySelector( '.paginate.left' );
+var pl = document.querySelector( '.paginate.right' );
+
 $(function () {
+  //<pagination
+   
+    pr.onclick = slide.bind( this, -1 );
+    pl.onclick = slide.bind( this, 1 );
+
+    function slide(offset) {
+      
+      pageIndex = Math.min( Math.max( pageIndex + offset, 0 ), total - 1 );
+      $(".counter").attr("value",pageIndex+1);
+      document.querySelector( '.counter' ).innerHTML = ( pageIndex + 1 ) + ' / ' + total;
+
+      pr.setAttribute( 'data-state', pageIndex === 0 ? 'disabled' : '' );
+      pl.setAttribute( 'data-state', pageIndex === total - 1 ? 'disabled' : '' );
+    }
+
+    slide(0);
+  //>
   //<notfication
   if (Cookies.get('color') !== undefined && Cookies.get('color') !== undefined) {
     showNotification('top', 'right', Cookies.get('color'), Cookies.get('message'));
@@ -207,29 +231,52 @@ function viewToJson(row, data) {
 }
 //>
 //<database document filter
-var filter={};
+var query={filter:{},limit:10,page:1};
 $("body").delegate("thead>tr>th>[type]","change",function(){
   _key=$(this).attr("data-key");
   if($(this).val()=="")
-    delete filter[_key]
+    delete query.filter[_key]
   else{
-    filter[_key]=$(this).val();
+    if($(this).attr("type")=="text")
+      query.filter[_key]={ $regex: `.*${$(this).val()}.*`,$options: 'i'};
+    else 
+      query.filter[_key]=$(this).val();
   }
   collectionName=$("[collection]").attr("collection");
+  //pagination
+  pageIndex=0;
+  pr.setAttribute( 'data-state', 'disabled' );
   applyFilter(collectionName);
 });
+$("body").delegate(".paginate","click",function(){
+  collectionName=$("[collection]").attr("collection");
+  applyFilter(collectionName);
+})
+$("body").delegate("[key='limit']","change",function(){
+  collectionName=$("[collection]").attr("collection");
+  //pagination
+  pageIndex=0;
+  pr.setAttribute( 'data-state', 'disabled' );
+  applyFilter(collectionName);
+})
 function applyFilter(collectionName){
   var _data={};
   _data.collection=collectionName;
-  _data.filter=JSON.stringify(filter);
-
+  
+  query.limit=parseInt($("[key='limit']").val());
+  query.page=pageIndex+1;
+  _data.query=JSON.stringify(query);
   $.ajax({
     type:"POST", 
     url:"/ajax/filter",
     dataType: "json", 
     data: _data,
     success:function(result){
-       $(".table tbody").html(result.data);
+       $(".table tbody").html(result.data.body);
+       //pagination
+       total=result.data.maxPage;
+       document.querySelector('.counter').innerHTML = (pageIndex+1) + ' / ' + result.data.maxPage;
+       pl.setAttribute( 'data-state', pageIndex === total - 1 ? 'disabled' : '' );
     },
     error: function (jqXHR, exception) {
         console.log(jqXHR);

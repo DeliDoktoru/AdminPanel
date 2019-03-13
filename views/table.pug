@@ -7,9 +7,26 @@ block content
         i.ti-pin-alt.mr-1    
         ="Kayıt Oluştur"
   .row
+    .col-md-2.col-sm-4
+      select.form-control(key="limit")
+        option(value='2') 2
+        option(value='5') 5
+        option(value='10' selected) 10
+        option(value='25') 25
+        option(value='50') 50
+    
     .col-md-12
       .card
         .content.table-responsive.table-full-width.removeTopPadding(collection=collection)  
           !=content
+    .col-md-12.mt-5.mb-4    
+      .counter(key="page")
+      button.paginate.left.paginationButton
+        i
+        i
+      button.paginate.right.paginationButton
+        i
+        i      
 block script
   script.
+    total=#{maxPage};

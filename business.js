@@ -1,5 +1,4 @@
-var pmongo = require('promised-mongo'); 
-var helperDriver= require("./mongoNativeDriverHelper");
+var ObjectId = require('mongodb').ObjectID;
     setValuesToinputs=function(inputs,values){
         for(var i=0;i<inputs.length;i++){
             if(inputs[i].type=="array"){
@@ -59,8 +58,10 @@ var helperDriver= require("./mongoNativeDriverHelper");
     viewBodyGenerator=async function(_page,_db,_url,_query){
         var _body="";
         if(_query==undefined)
-            _query={};
-        var arr=await _db.collection(_page.collection).find(_query).toArray();
+            _query={filter:{},limit:10,page:1};
+        var result=await _db.collection(_page.collection).find(_query.filter).limit(_query.limit).skip((_query.page-1)*_query.limit);
+        var arr=await result.toArray();
+        var maxPage=Math.ceil((await result.count())/_query.limit);
         for(val of arr){
             var tmp=`<tr data-id="${val._id}" onclick="location.href='${_url}/${val._id}'">`; 
             for(item of _page.content){
@@ -68,7 +69,7 @@ var helperDriver= require("./mongoNativeDriverHelper");
                     continue;
                 if(item.type=="select"){
                     if(item.target!=undefined && item.target!=""){
-                        var k=await _db.collection(item.target).findOne({_id:pmongo.ObjectId(val[item.key])});
+                        var k=await _db.collection(item.target).findOne({_id:ObjectId(val[item.key])});
                         var re=(await _db.collection("Sayfalar").findOne({'collection':item.target})).content;
                         var tmpKey="";
                         for(val2 of re){
@@ -94,7 +95,7 @@ var helperDriver= require("./mongoNativeDriverHelper");
             tmp+="</tr>";
             _body+=tmp;
         }
-        return _body;
+        return {body:_body,maxPage:maxPage};
     }
     viewGenerator=async function(_page,_db,_url,_query){
         var _txt=""
@@ -102,8 +103,7 @@ var helperDriver= require("./mongoNativeDriverHelper");
         //header
         header=await viewHeaderGenerator(_page,_db,_url);
         //body
-        body=await viewBodyGenerator(_page,_db,_url,_query);
-       
+        bodyResult=await viewBodyGenerator(_page,_db,_url,_query);
        
         _txt=`
             <table class="table">
@@ -111,12 +111,12 @@ var helperDriver= require("./mongoNativeDriverHelper");
                     ${header}
                 </thead>
                 <tbody>
-                    ${body}
+                    ${bodyResult.body}
                 </tbody>
             </table>
         
         `;
-        return  {txt:_txt};
+        return  {txt:_txt,maxPage:bodyResult.maxPage};
     }
     inputGenerator=async function(_array,_db){
         var _txt="";
@@ -130,7 +130,7 @@ var helperDriver= require("./mongoNativeDriverHelper");
                 if(item.special!=undefined && item.special!=""){
                     switch(item.special) {
                         case "allCollections":
-                            var tmp= (await helperDriver.command({'listCollections': 1 })).cursor.firstBatch
+                            var tmp= (await _db.command({'listCollections': 1 })).cursor.firstBatch
                             for(val of tmp){
                                 selectItems.push({key: val.name,value: val.name});
                             }
@@ -242,8 +242,39 @@ var helperDriver= require("./mongoNativeDriverHelper");
         }
         return {txt:_txt,contentArray:_contentArray};
     }
+    checkAllow=async function(user,db,collection){
+        
+        if(user==undefined){
+            throw "Erişim Engellendi!";
+          }
+          if(db==undefined){
+            throw "Bağlantı bulunamadı!";
+          }
+          if(collection==undefined  ){
+            throw "Yığın bulunamadı!";
+          }
     
+        _grupId=user.grup;
+        if(_grupId==undefined){
+            throw "Kişinin Grup Yetkisi Bulunamadı!";
+        }
+        _yetkiGrubu=await db.collection("Yetki Grupları").findOne({'_id': ObjectId(_grupId)});
+        if(_yetkiGrubu==null){
+            throw "Böyle Bir Grup Yetkisi Bulunamadı!";
+        }
+        
+        result=(await db.collection("Sayfalar").findOne({'collection': collection}));
+        if(result==null){
+            throw "Bu Yığına Erişim Sağlayamazsınız!";
+        }
+        for(val of _yetkiGrubu.allowedCollection){
+          if(val.collectionId==result._id)
+            return null;
+        }
+        throw "Erişim Engellendi!";
+    }
 module.exports={inputGenerator:inputGenerator,
                 setValuesToinputs:setValuesToinputs,
-                viewGenerator:viewGenerator
+                viewGenerator:viewGenerator,
+                viewBodyGenerator:viewBodyGenerator
             }
