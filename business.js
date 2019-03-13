@@ -170,11 +170,31 @@ var ObjectId = require('mongodb').ObjectID;
                 `;
             } 
             else if(item.type=="array"){
-                var arr=item.items;
+                var arr;
                 //recursive dönüşünde problem çıktığı için itemi saklamak için geçici tmp değişkenine atıyorum.
                 var tmp=item;
-                var tmpObj=await inputGenerator(arr,_db);
+                var tmpObj;
+                if(item.special!=undefined && item.special!=""){
+                    switch(item.special) {
+                        case "subPage":
+                            //var c=(await _db.collection("Sayfalar").findOne({'collection':'Sayfalar'})).content;
+                            //arr=(c.find(x => x.key === 'content').items).filter(x => x.special != 'subPage' || x.special==undefined);
+                            //tmpObj=await inputGenerator(arr,_db);
+                            tmpObj="";
+                            break;
+                        default:
+                          // code block
+                      }
+                }
+                else{
+                    if(item.items==undefined)
+                        throw "Parçalar bulunamadı"
+                    arr=item.items;
+                    tmpObj=await inputGenerator(arr,_db);
+                }
                 
+                
+            
                 _contentArray[tmp.key]=`
                 <div class="row pb-1 pt-2 gainsboro card col-md-${item.size}  index="%index%"  >
                     <div class="col-md-12 text-right">
@@ -214,14 +234,14 @@ var ObjectId = require('mongodb').ObjectID;
                         <button action-method="addArrayItem" action-target="${item.key}" class="ml-4 btn btn-sm btn-success" type='button'> <i class="ti-angle-up mr-1"></i>Ekle</button>
                     </div>
                 </div>    
-                `;        
+                `;  
             }
             else if(item.type=="password"){
                 _txt+=`
                 <div class="col-md-${item.size}">
                     <div class="form-group">
                         <label> ${item.text} </label>
-                        <input  type="${item.type}" class="border-input form-control" data-key="${item.key}" ${item.required?"enforced":""}></input>
+                        <input min="${item.min}" max="${item.max}" type="${item.type}" class="border-input form-control" data-key="${item.key}" ${item.required?"enforced":""}></input>
                     </div>
                 </div>
                     
@@ -232,7 +252,7 @@ var ObjectId = require('mongodb').ObjectID;
                 <div class="col-md-${item.size}">
                     <div class="form-group">
                         <label> ${item.text} </label>
-                        <input  type="${item.type}" class="border-input form-control" data-key="${item.key}" value="${item.value}" ${item.required?"enforced":""}></input>
+                        <input min="${item.min}" max="${item.max}" type="${item.type}" class="border-input form-control" data-key="${item.key}" value="${item.value}" ${item.required?"enforced":""}></input>
                     </div>
                 </div>
                     

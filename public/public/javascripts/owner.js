@@ -9,9 +9,7 @@ var pl = document.querySelector( '.paginate.right' );
 
 $(function () {
   //<pagination
-   
-    pr.onclick = slide.bind( this, -1 );
-    pl.onclick = slide.bind( this, 1 );
+    
 
     function slide(offset) {
       
@@ -22,8 +20,12 @@ $(function () {
       pr.setAttribute( 'data-state', pageIndex === 0 ? 'disabled' : '' );
       pl.setAttribute( 'data-state', pageIndex === total - 1 ? 'disabled' : '' );
     }
-
-    slide(0);
+    if(pr!=null && pl !=null ){
+      pr.onclick = slide.bind( this, -1 );
+      pl.onclick = slide.bind( this, 1 );
+      slide(0);
+    }
+    
   //>
   //<notfication
   if (Cookies.get('color') !== undefined && Cookies.get('color') !== undefined) {
@@ -162,6 +164,49 @@ $(function () {
     $(this).css("border-bottom", "");
  });
  //>
+ //<max min kontrolu
+ function maxMinControl(){
+  var result=false,kucuk=false,buyuk=false;
+  $("[max],[min]").each(function(){
+    if($(this).val()!="" && $(this).val()!=undefined && $(this).val()!=null){
+      if($(this).attr("max")!=undefined)
+      {
+        _max=parseInt($(this).attr("max"));
+        if(_max!=NaN && $(this).val().length > _max)
+        {
+          $(this).css("border-bottom", "2px solid red");
+          buyuk=true;
+          result=true;
+        }
+      }
+      if($(this).attr("min")!=undefined)
+      {
+        _min=parseInt($(this).attr("min"));
+        if(_min!=NaN && $(this).val().length < _min)
+        {
+          $(this).css("border-bottom", "2px solid blue");
+          kucuk=true;
+          result=true;
+        }
+      }
+    }
+  });
+  if(kucuk)
+    showNotification('top', 'right', 'info', 'Girdiğiniz Karakter Sayısı Yeterli Değil.');
+  if(buyuk)
+    showNotification('top', 'right', 'danger', 'Girdiğiniz Karakter Sayısı Çok Fazla.');
+  return result;
+ }
+ $("body").delegate("[enforced]", "change keyup paste", function (){
+   if($(this).val()!="" && $(this).val()!=undefined && $(this).val()!=null)
+    $(this).css("border-bottom", "");
+ });
+ //>
+//<bütün kontroller
+function controls(){
+  return (enforcedControl() || maxMinControl())
+}
+//>
 //<loading animasyonu
 var stop = false;
 var _height = $(window).height();
@@ -287,7 +332,7 @@ function applyFilter(collectionName){
 //>
 //< database document işlemleri
 changeDocument = function (_method, _id, _collection, _data,goBackPage) {
-  if(_method!="delete" && enforcedControl())
+  if(_method!="delete" && controls())
     return;
   if(goBackPage==undefined)
     goBackPage=false;
@@ -351,7 +396,7 @@ changeDocument = function (_method, _id, _collection, _data,goBackPage) {
 //>
 //< database collection işlemleri
 changeCollection = function (_method, _collectionName, _oldCollectionName, _options) {
-  if(_method!="delete" && enforcedControl())
+  if(_method!="delete" && controls())
     return;
   data = {};
 
