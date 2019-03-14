@@ -44,10 +44,18 @@ var ObjectId = require('mongodb').ObjectID;
                     _headers+=`  
                     <th><select type="${item.type}" data-key="${item.key}" >
                         ${selectTxt}
-                    </select><br><br><span>${item.text}</span></th>`
+                    </select><br><br><div sort="${item.key}">${item.text}
+                    <i class="ti-arrows-vertical"></i>
+                    </div></th>`
+                }
+                else if(item.type=="number"){
+                    _headers+=`<th><input type="${item.type}" data-key="${item.key}" m="min" placeholder="Minumum"></input>
+                    <input type="${item.type}" data-key="${item.key}" m="max" placeholder="Maksimum"></input>
+                    <br><br><div sort="${item.key}">${item.text}<i class="ti-arrows-vertical"></i></div></th>`;
                 }
                 else
-                    _headers+=`<th><input type="${item.type}" data-key="${item.key}"></input><br><br><span>${item.text}</span></th>`;
+                    _headers+=`<th><input type="${item.type}" data-key="${item.key}"></input>
+                    <br><br><div sort="${item.key}">${item.text}<i class="ti-arrows-vertical"></i></div></th>`;
             }
                 
         }
@@ -59,7 +67,7 @@ var ObjectId = require('mongodb').ObjectID;
         var _body="";
         if(_query==undefined)
             _query={filter:{},limit:10,page:1};
-        var result=await _db.collection(_page.collection).find(_query.filter).limit(_query.limit).skip((_query.page-1)*_query.limit);
+        var result=await _db.collection(_page.collection).find(_query.filter).limit(_query.limit).skip((_query.page-1)*_query.limit).sort(_query.sort);
         var arr=await result.toArray();
         var maxPage=Math.ceil((await result.count())/_query.limit);
         for(val of arr){

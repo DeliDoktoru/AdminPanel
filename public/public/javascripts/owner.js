@@ -17,7 +17,7 @@ $(function () {
       $(".counter").attr("value",pageIndex+1);
       document.querySelector( '.counter' ).innerHTML = ( pageIndex + 1 ) + ' / ' + total;
 
-      pr.setAttribute( 'data-state', pageIndex === 0 ? 'disabled' : '' );
+      pr.setAttribute( 'data-state', pageIndex === 0 || pageIndex ===-1? 'disabled' : '' );
       pl.setAttribute( 'data-state', pageIndex === total - 1 ? 'disabled' : '' );
     }
     if(pr!=null && pl !=null ){
@@ -166,35 +166,68 @@ $(function () {
  //>
  //<max min kontrolu
  function maxMinControl(){
-  var result=false,kucuk=false,buyuk=false;
+  var result=false,kucuk=false,buyuk=false,fazlaKarakter=false,azKarakter=false;
   $("[max],[min]").each(function(){
     if($(this).val()!="" && $(this).val()!=undefined && $(this).val()!=null){
       if($(this).attr("max")!=undefined)
       {
-        _max=parseInt($(this).attr("max"));
-        if(_max!=NaN && $(this).val().length > _max)
+        var _max=parseInt($(this).attr("max"));
+
+        if($(this).attr("type")=="number")
         {
-          $(this).css("border-bottom", "2px solid red");
-          buyuk=true;
-          result=true;
+          var tmp=parseInt($(this).val());
+          if(!isNaN(_max) && !isNaN(tmp) && tmp > _max)
+          {
+            $(this).css("border-bottom", "2px solid red");
+            buyuk=true;
+            result=true;
+          }
         }
+        else
+        {
+          if(!isNaN(_max) && $(this).val().length > _max)
+          {
+            $(this).css("border-bottom", "2px solid red");
+            fazlaKarakter=true;
+            result=true;
+          }
+
+        }
+      
       }
       if($(this).attr("min")!=undefined)
       {
         _min=parseInt($(this).attr("min"));
-        if(_min!=NaN && $(this).val().length < _min)
+        if($(this).attr("type")=="number")
         {
-          $(this).css("border-bottom", "2px solid blue");
-          kucuk=true;
-          result=true;
+          var tmp=parseInt($(this).val());
+          if(!isNaN(_min) && !isNaN(tmp) && tmp < _min)
+          {
+            $(this).css("border-bottom", "2px solid blue");
+            kucuk=true;
+            result=true;
+          }
+        }
+        else
+        {
+          if(!isNaN(_min) && $(this).val().length < _min)
+          {
+            $(this).css("border-bottom", "2px solid blue");
+            azKarakter=true;
+            result=true;
+          }
         }
       }
     }
   });
-  if(kucuk)
+  if(azKarakter)
     showNotification('top', 'right', 'info', 'Girdiğiniz Karakter Sayısı Yeterli Değil.');
-  if(buyuk)
+  if(fazlaKarakter)
     showNotification('top', 'right', 'danger', 'Girdiğiniz Karakter Sayısı Çok Fazla.');
+  if(kucuk)
+    showNotification('top', 'right', 'info', 'Girdiğiniz Değer Yeterli Değil.');
+  if(buyuk)
+    showNotification('top', 'right', 'danger', 'Girdiğiniz Değer Fazla.');
   return result;
  }
  $("body").delegate("[enforced]", "change keyup paste", function (){
@@ -267,7 +300,10 @@ function viewToJson(row, data) {
         data[_key]=false;
       else
         data[_key]=$(this).val();
-    }else {
+    }else if($(this).attr("type") == "number"){
+      data[_key]=parseFloat($(this).val().replaceAll(",","."));
+    }
+    else {
       data[_key] = $(this).val();
     }
 
@@ -276,37 +312,64 @@ function viewToJson(row, data) {
 }
 //>
 //<database document filter
-var query={filter:{},limit:10,page:1};
+var query={filter:{},limit:10,page:1,sort:{}};
+$("body").delegate("thead>tr>th>[sort]","click",function(){
+  _key=$(this).attr("sort");
+  if(query.sort[_key]==undefined)
+    query.sort[_key]=1;
+  else
+    query.sort[_key]=query.sort[_key]*-1;
+  applyFilter();
+});
 $("body").delegate("thead>tr>th>[type]","change",function(){
   _key=$(this).attr("data-key");
-  if($(this).val()=="")
+   if($(this).attr("type")=="number")
+   {
+    query.filter[_key]={};
+    var _max=parseFloat($(`[data-key='${_key}'][m='max']`).val().replaceAll(",","."));
+    var _min=parseFloat($(`[data-key='${_key}'][m='min']`).val().replaceAll(",","."));
+    if(!isNaN(_max) && _max!=null)
+      query.filter[_key].$lte=_max;
+    else
+      delete query.filter[_key].$lt;
+    if(!isNaN(_min) && _min!=null)
+      query.filter[_key].$gte=_min;
+    else      
+      delete query.filter[_key].$gt;
+    if(jQuery.isEmptyObject(query.filter[_key]))  
+      delete query.filter[_key];
+  } 
+  else if($(this).val()=="")
+  {
     delete query.filter[_key]
-  else{
+  }
+  else
+  {
     if($(this).attr("type")=="text")
       query.filter[_key]={ $regex: `.*${$(this).val()}.*`,$options: 'i'};
+     
     else 
       query.filter[_key]=$(this).val();
   }
-  collectionName=$("[collection]").attr("collection");
   //pagination
   pageIndex=0;
   pr.setAttribute( 'data-state', 'disabled' );
-  applyFilter(collectionName);
+  applyFilter();
 });
 $("body").delegate(".paginate","click",function(){
-  collectionName=$("[collection]").attr("collection");
-  applyFilter(collectionName);
+  if($(this).attr("data-state")!="disabled"){
+    applyFilter();
+  }
 })
 $("body").delegate("[key='limit']","change",function(){
-  collectionName=$("[collection]").attr("collection");
   //pagination
   pageIndex=0;
   pr.setAttribute( 'data-state', 'disabled' );
-  applyFilter(collectionName);
+  applyFilter();
 })
-function applyFilter(collectionName){
+function applyFilter(){
   var _data={};
-  _data.collection=collectionName;
+  _data.collection=$("[collection]").attr("collection");
   
   query.limit=parseInt($("[key='limit']").val());
   query.page=pageIndex+1;
@@ -317,6 +380,8 @@ function applyFilter(collectionName){
     dataType: "json", 
     data: _data,
     success:function(result){
+       if(result.data.body=="")
+        pageIndex=-1;
        $(".table tbody").html(result.data.body);
        //pagination
        total=result.data.maxPage;
