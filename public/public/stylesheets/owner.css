@@ -274,3 +274,8 @@ th [type='number']{
   padding-left: 30px;
   cursor: pointer;
 }
+
+[key='limit']{
+  width: 30% !important;
+  margin-left: 30px;
+}

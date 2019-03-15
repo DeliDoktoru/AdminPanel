@@ -41,9 +41,9 @@ html
             if menu != null 
               each val in menu
                 li
-                  a(href='/'+val)
-                    i.ti-panel
-                    p=val
+                  a(href='/'+val.text)
+                    i(class=val.icon)
+                    p=val.text
       .main-panel
         nav.navbar.navbar-default
           .container-fluid

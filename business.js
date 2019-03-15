@@ -132,13 +132,24 @@ var ObjectId = require('mongodb').ObjectID;
         _array=_array.sort((a, b) => (a.rank > b.rank) ? 1 : -1)
         for(item of _array){
             if(item.value==undefined)
-              item.value="";    
+              item.value="";
             if(item.type=="select"){
+                var helper="";
+                if(item.helper!=undefined && item.helper!=""){
+                    if(item.helper=="icon")
+                        helper=`<i class="" ></i>`;
+                }      
                 var selectItems=[];
                 if(item.special!=undefined && item.special!=""){
                     switch(item.special) {
                         case "allCollections":
                             var tmp= (await _db.command({'listCollections': 1 })).cursor.firstBatch
+                            for(val of tmp){
+                                selectItems.push({key: val.name,value: val.name});
+                            }
+                            break;
+                        case "fixedDatas":
+                            var tmp= (await _db.collection("Sabit Seçim Verileri").find({}).toArray());
                             for(val of tmp){
                                 selectItems.push({key: val.name,value: val.name});
                             }
@@ -170,7 +181,8 @@ var ObjectId = require('mongodb').ObjectID;
                 <div class="col-md-${item.size}">
                     <div class="form-group">
                         <label> ${item.text} </label>
-                        <select type="${item.type}"  class="form-control" data-key="${item.key}" ${item.required?"enforced":""}>
+                         ${helper}
+                        <select type="${item.type}" ${helper!=""?`h=${item.helper}`:""}   class="form-control" data-key="${item.key}" ${item.required?"enforced":""}>
                            ${selectTxt}
                         </select>
                     </div> 

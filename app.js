@@ -104,7 +104,7 @@ app.use(async function(req,res,next){
             for(items of _yetkiGrubu.allowedCollection){
               r=(await db.collection("Sayfalar").findOne({'_id': ObjectId(items.collectionId)}));
               if(r!=null && r!=undefined)
-                _data.push(r.pageName);
+                _data.push({text:r.pageName,icon:r.icon});
             }
             res.locals.menu=_data;
             boolean=true;

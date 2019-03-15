@@ -126,8 +126,19 @@ $(function () {
     }
   });
   //>
-
+  //<helper
+  $("body").delegate("[h]","change",function(){
+    _helper=$(this).attr("h");
+    _val=$(this).val();
+  if(_helper=="icon"){
+    $(this).parent().find(">i").attr("class",_val);
+  }
+  }); 
+  $("[h]").trigger("change");
+//>
 });
+
+ 
  //<Çıkış yap
  function exit(){
   $.ajax({
