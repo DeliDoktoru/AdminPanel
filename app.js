@@ -59,8 +59,7 @@ function checkAllowed(txt){
   return false;
 }
 app.use(async function(req,res,next){
-  next();
-  return;
+ 
   if(checkAllowed(req.url)){
     next();
     return;

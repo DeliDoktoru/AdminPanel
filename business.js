@@ -78,6 +78,8 @@ var ObjectId = require('mongodb').ObjectID;
                 if(item.type=="select"){
                     if(item.target!=undefined && item.target!=""){
                         var k=await _db.collection(item.target).findOne({_id:ObjectId(val[item.key])});
+                        if(k==null)
+                            continue;       
                         var re=(await _db.collection("Sayfalar").findOne({'collection':item.target})).content;
                         var tmpKey="";
                         for(val2 of re){
