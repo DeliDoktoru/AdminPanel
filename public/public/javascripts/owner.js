@@ -64,6 +64,18 @@ $(function () {
     backPageUrl = links[links.length - 2];
   $(".content-title").html(tmp);
   //>
+  //<text editor
+  $(function() {
+    if($("[type='editor']").length!=0){
+      var inputHtml=$("[type='editor']").val();
+      replaceElementTag("[type='editor']", '<div></div>');
+      $("[type='editor']").froalaEditor();
+      $("[type='editor']").froalaEditor('html.set', inputHtml);
+      
+      
+    }
+  });
+  //>
   //<json editor
   var container = document.getElementById("jsoneditor");
   if (container != undefined) {
@@ -163,10 +175,18 @@ $(function () {
  function enforcedControl(){
   var result=false;
   $("[enforced]").each(function(){
-    if($(this).val()=="" || $(this).val()==undefined || $(this).val()==null){
+    if ($(this).attr("type") == "editor" ){
+      htmlText=$(this).froalaEditor('html.get', true)
+      if(htmlText=="" || htmlText=="<p></p>"){
+        result=true;
+        $(this).css("border-bottom", "4px solid red");
+      }
+    } 
+    else if($(this).val()=="" || $(this).val()==undefined || $(this).val()==null){
       result=true;
       $(this).css("border-bottom", "2px solid red");
     }
+    
   });
   if(result)
     showNotification('top', 'right', 'danger', 'Zorunlu alanları doldurmanız gerekmektedir.');
@@ -315,6 +335,8 @@ function viewToJson(row, data) {
         data[_key]=$(this).val();
     }else if($(this).attr("type") == "number"){
       data[_key]=parseFloat($(this).val().replaceAll(",","."));
+    }else if($(this).attr("type") == "editor"){
+      data[_key]=$(this).froalaEditor('html.get', true);
     }
     else {
       data[_key] = $(this).val();

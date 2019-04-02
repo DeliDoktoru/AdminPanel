@@ -59,7 +59,7 @@ function checkAllowed(txt){
   return false;
 }
 app.use(async function(req,res,next){
-  
+   
   if(checkAllowed(req.url)){
     next();
     return;
@@ -109,7 +109,7 @@ app.use(async function(req,res,next){
             var _data=[]
             for(items of _yetkiGrubu.allowedCollection){
               r=(await db.collection("Sayfalar").findOne({'_id': ObjectId(items.collectionId)}));
-              if(r!=null && r!=undefined)
+              if(r!=null && r!=undefined && r.showMenu)
                 _data.push({text:r.pageName,icon:r.icon,link:r.link});
             }
             res.locals.menu=_data;

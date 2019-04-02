@@ -30,8 +30,10 @@ router.get('/database',async function(req, res, next) {
 }); 
 
 router.get('/duyuru',async function(req, res, next){
-  res.render('announcements', { title: 'Duyurular'  });
-})
+  const db = req.app.locals.db;
+  var _data=await db.collection("Duyurular").find().sort( { date : -1 } ).toArray();
+  res.render('announcements', { title: 'Duyurular' ,data:_data  });
+});
 
 router.get('/database/:collectionName',async function(req, res, next) {
   if(req.params.collectionName=="Yeni_Yığın")

@@ -4,31 +4,35 @@ block content
   //h1(style="color:red")= title+"asdsad"
   //p Welcome to #{title}  
   .row
-    .col-md-12
-      .card
-        .header
-          h4.title Users Behavior
-          p.category 24 Hours performance
-        .content(style="height:100%")
-          .col-md-5
-            .card(style="background-color: #e8e8e8;")
-              .header
-                h4.title test1
-              .content
-                ="asdasa" 
-          .col-md-2.text-center
-            i.fa.fa-circle.text-info(style="font-size: 25px;color: #666f6f;")
-            div(style="background: #a7a7a7;width: 3px;height: 125px;margin: auto;")
-          .col-md-5(style="height: 150px;")
-
-          .col-md-5(style="height: 150px;")
-          .col-md-2.text-center
-            i.fa.fa-circle.text-info(style="font-size: 25px;color: #666f6f;")
-            div(style="background: #a7a7a7;width: 3px;height: 125px;margin: auto;")
-          .col-md-5
-            .card(style="background-color: #e8e8e8;")
-              .header
-                h4.title test2
-              .content
-                ="asdasa"     
+    .col-md-12.card
+      .header
+        h4.title 
+        p.category 
+      .content(style="height:100%")
+        each val,index in data
+          if index%2
+            div(style="height:  300px")
+              .col-md-5(style="overflow: auto;height: 100%;")
+                .card(style="background-color: #e8e8e8;")
+                  div(style="position: absolute;top:7;right:15")=val.date
+                  .header
+                    h4.title=val.title
+                  .content!= val.text
+              .col-md-2.text-center
+                i.fa.fa-circle(style="font-size: 25px;",class=val.color)
+                div(style="background: #a7a7a7;width: 3px;height: 275px;margin: auto;")
+              .col-md-5
+          else
+            div(style="height:  300px")
+              .col-md-5
+              .col-md-2.text-center
+                i.fa.fa-circle(style="font-size: 25px;",class=val.color)
+                div(style="background: #a7a7a7;width: 3px;height: 275px;margin: auto;")
+              .col-md-5(style="overflow: auto;height: 100%;")
+                .card(style="background-color: #e8e8e8;")
+                  div(style="position: absolute;top:7;right:15")=val.date
+                  .header
+                    h4.title=val.title
+                  .content!= val.text
+                         
 

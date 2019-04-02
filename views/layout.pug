@@ -15,7 +15,10 @@ html
     link(href='/public/stylesheets/owner.css', rel='stylesheet')
     // jsoneditor CSS
     link(href='/public/Plugins/jsoneditor/jsoneditor.min.css', rel='stylesheet')
-    
+    // froala editor css
+    link(href='https://cdn.jsdelivr.net/npm/froala-editor@2.9.0/css/froala_editor.pkgd.min.css', rel='stylesheet')
+    link(href='https://cdn.jsdelivr.net/npm/froala-editor@2.9.0/css/froala_style.min.css', rel='stylesheet')
+
     // Bootstrap core CSS
     link(href='/public/stylesheets/bootstrap.min.css', rel='stylesheet')
     // Bootstrap spacing CSS
@@ -57,14 +60,14 @@ html
             .collapse.navbar-collapse
               ul.nav.navbar-nav.navbar-right
                 li
-                  a.dropdown-toggle(href='#', data-toggle='dropdown')
+                  a(href='/Duyuru')
                     i.ti-panel
-                    p Stats
+                    p.ml-1 Duyurular
                 li.dropdown
                   a.dropdown-toggle(href='#', data-toggle='dropdown')
                     i.ti-bell
-                    p.notification 5
-                    p Notifications
+                    p.notification 
+                    p.ml-1 Bildirimler
                     b.caret
                   ul.dropdown-menu
                     li
@@ -80,11 +83,11 @@ html
                 li
                   a(href='#')
                     i.ti-settings
-                    p Settings
+                    p.ml-1 Settings
                 li
                   a(href='#' onclick="exit()")
                     i.ti-shift-left-alt
-                    p Çıkış Yap
+                    p.ml-1 Çıkış Yap
         .content
           .container-fluid
             block content
@@ -128,6 +131,8 @@ html
     script(src='/public/javascripts/owner.js')
     // md5
     script(src='/public/javascripts/md5.min.js')
-    
+    // froala-editor js
+    script(src='https://cdn.jsdelivr.net/npm/froala-editor@2.9.0/js/froala_editor.pkgd.min.js')
+
     block script
    
