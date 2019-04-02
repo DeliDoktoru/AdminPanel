@@ -59,14 +59,16 @@ function checkAllowed(txt){
   return false;
 }
 app.use(async function(req,res,next){
- 
+  
   if(checkAllowed(req.url)){
     next();
     return;
   }
   if(req.url=="/"){
-    if(req.session.user==undefined || req.session.user._id==undefined)
+    if(req.session.user==undefined || req.session.user._id==undefined){
       next();
+      return;
+    }
     else
       res.redirect('/dashboard');
   }    

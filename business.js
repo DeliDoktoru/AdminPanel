@@ -78,8 +78,10 @@ var ObjectId = require('mongodb').ObjectID;
                 if(item.type=="select"){
                     if(item.target!=undefined && item.target!=""){
                         var k=await _db.collection(item.target).findOne({_id:ObjectId(val[item.key])});
-                        if(k==null)
-                            continue;       
+                        if(k==null){
+                            tmp+=`<td></td>`;
+                            continue; 
+                        }     
                         var re=(await _db.collection("Sayfalar").findOne({'collection':item.target})).content;
                         var tmpKey="";
                         for(val2 of re){
@@ -90,16 +92,23 @@ var ObjectId = require('mongodb').ObjectID;
                     }
                     else if(item.fixedData!=undefined && item.fixedData!=""){
                         var re=(await _db.collection("Sabit Seçim Verileri").findOne({"name":item.fixedData})).content;
+                        var isNull=true;
                         for(i of re){
                             if(i.value==val[item.key]){
                                 tmp+=`<td>${i.key}</td>`;
+                                isNull=false; 
                                 break;
                             }
                         }
+                        if(isNull)
+                            tmp+=`<td></td>`;
                     }
                 }
                 else{
-                tmp+=`<td>${val[item.key]}</td>`;
+                    if(val[item.key]==null)
+                        tmp+=`<td></td>`;
+                    else
+                        tmp+=`<td>${val[item.key]}</td>`;
                 }
             }
             tmp+="</tr>";
@@ -330,5 +339,6 @@ var ObjectId = require('mongodb').ObjectID;
 module.exports={inputGenerator:inputGenerator,
                 setValuesToinputs:setValuesToinputs,
                 viewGenerator:viewGenerator,
-                viewBodyGenerator:viewBodyGenerator
+                viewBodyGenerator:viewBodyGenerator,
+                checkAllow:checkAllow
             }

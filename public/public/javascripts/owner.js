@@ -6,24 +6,26 @@ var backPageUrl;
 var pageIndex = 0, total = 5;
 var pr = document.querySelector( '.paginate.left' );
 var pl = document.querySelector( '.paginate.right' );
-
+//pagination
+function dataState(){
+  pr.setAttribute( 'data-state', pageIndex === 0 || pageIndex ===-1? 'disabled' : '' );
+  pl.setAttribute( 'data-state', pageIndex === total - 1 ? 'disabled' : '' );
+}
 $(function () {
   //<pagination
     
 
     function slide(offset) {
-      
       pageIndex = Math.min( Math.max( pageIndex + offset, 0 ), total - 1 );
       $(".counter").attr("value",pageIndex+1);
       document.querySelector( '.counter' ).innerHTML = ( pageIndex + 1 ) + ' / ' + total;
-
-      pr.setAttribute( 'data-state', pageIndex === 0 || pageIndex ===-1? 'disabled' : '' );
-      pl.setAttribute( 'data-state', pageIndex === total - 1 ? 'disabled' : '' );
     }
+   
     if(pr!=null && pl !=null ){
       pr.onclick = slide.bind( this, -1 );
       pl.onclick = slide.bind( this, 1 );
       slide(0);
+      dataState();
     }
     
   //>
@@ -371,7 +373,8 @@ $("body").delegate(".paginate","click",function(){
   if($(this).attr("data-state")!="disabled"){
     applyFilter();
   }
-})
+  dataState();
+});
 $("body").delegate("[key='limit']","change",function(){
   //pagination
   pageIndex=0;

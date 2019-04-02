@@ -1483,7 +1483,7 @@ textarea.form-control {
 
 .table > thead > tr > th {
     border-bottom-width: 0;
-    font-size: 1.25em;
+    font-size: 15px;
     font-weight: 300;
 }
 

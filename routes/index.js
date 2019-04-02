@@ -2,9 +2,10 @@ var express = require('express');
 var router = express.Router();
 var business = require('../business');
 var ObjectId = require('mongodb').ObjectID;
-
+var mail =require('../mailSender');
 //login
 router.get('/',async function(req, res, next) {
+  //mail();
   res.render('login', { title: 'Giriş' });
 });
 
@@ -27,6 +28,10 @@ router.get('/database',async function(req, res, next) {
   }
   res.render('cardList', { title: 'Database' ,url:req.url,data :data });
 }); 
+
+router.get('/duyuru',async function(req, res, next){
+  res.render('announcements', { title: 'Duyurular'  });
+})
 
 router.get('/database/:collectionName',async function(req, res, next) {
   if(req.params.collectionName=="Yeni_Yığın")
@@ -60,7 +65,7 @@ router.get('/database/:collectionName/:id',async function(req, res, next) {
 
 //Form
 notForm=function(txt){
-  var arr=["public","database","favicon.ico","dashboard","ajax"];
+  var arr=["public","database","favicon.ico","dashboard","ajax","istatistikler","duyuru"];
   for(val of arr)
   {
     if(txt==val)
@@ -195,7 +200,7 @@ router.post('/ajax/changeDocument',async function(req, res, next){
   _data=req.body; 
   var text, renk,status={};
   try{
-    //await checkAllow(req.session.user,db,_data.collection);
+    await business.checkAllow(req.session.user,db,_data.collection);
     if((await db.command({'listCollections': 1 ,"filter":{"name":_data.collection}})).cursor.firstBatch.length === 0)
       throw "Böyle Bir Yığın Bulunmamaktadır!"
     switch (_data.method) {
@@ -203,6 +208,8 @@ router.post('/ajax/changeDocument',async function(req, res, next){
           (await db.collection(_data.collection).deleteOne({_id:  ObjectId(_data.id)},{user:req.session.user,db:db,collection:_data.collection}));
           _data.items=JSON.parse(_data.items);
           _data.items._id=ObjectId(_data.id);
+          _data.items.When=new Date();
+          _data.items.User=req.session.user.userName;
           (await db.collection(_data.collection).insertOne(_data.items,{user:req.session.user,db:db,collection:_data.collection}));
           text = "Güncellendi!";
           status.ok=1
@@ -214,6 +221,8 @@ router.post('/ajax/changeDocument',async function(req, res, next){
         break;
       case "create":
           _data.items=JSON.parse(_data.items);
+          _data.items.When=new Date();
+          _data.items.User=req.session.user.userName;
           (await db.collection(_data.collection).insertOne(_data.items,{user:req.session.user,db:db,collection:_data.collection}));
           status.ok=1;
           text = "Oluşturuldu!";
@@ -231,6 +240,9 @@ router.post('/ajax/changeDocument',async function(req, res, next){
     renk="danger" 
   }
   else{
+    (await db.collection("Kullanıcılar").
+    updateOne({_id: new ObjectId(req.session.user._id)}, 
+    { $inc: { [_data.method]: 1 } }   ));
     renk="success" 
   }
   res.send( {message:text ,status:status,color:renk});

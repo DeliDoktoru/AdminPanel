@@ -1,0 +1,34 @@
+extends layout
+
+block content
+  //h1(style="color:red")= title+"asdsad"
+  //p Welcome to #{title}  
+  .row
+    .col-md-12
+      .card
+        .header
+          h4.title Users Behavior
+          p.category 24 Hours performance
+        .content(style="height:100%")
+          .col-md-5
+            .card(style="background-color: #e8e8e8;")
+              .header
+                h4.title test1
+              .content
+                ="asdasa" 
+          .col-md-2.text-center
+            i.fa.fa-circle.text-info(style="font-size: 25px;color: #666f6f;")
+            div(style="background: #a7a7a7;width: 3px;height: 125px;margin: auto;")
+          .col-md-5(style="height: 150px;")
+
+          .col-md-5(style="height: 150px;")
+          .col-md-2.text-center
+            i.fa.fa-circle.text-info(style="font-size: 25px;color: #666f6f;")
+            div(style="background: #a7a7a7;width: 3px;height: 125px;margin: auto;")
+          .col-md-5
+            .card(style="background-color: #e8e8e8;")
+              .header
+                h4.title test2
+              .content
+                ="asdasa"     
+
