@@ -63,21 +63,10 @@ router.get('/database/:collectionName/:id',async function(req, res, next) {
     res.render('jsonViewer', { title: "Yeni Kayıt" ,url:req.url ,data:{} ,collection:req.params.collectionName,id:"",method:"create"}); }
 });
 
-//Form
-notForm=function(txt){
-  var arr=["public","database","favicon.ico","dashboard","ajax","istatistikler","duyuru"];
-  for(val of arr)
-  {
-    if(txt==val)
-      return true;
-  }
-  return false;
-}
 
-router.get('/:pageName/:id',async function(req, res, next) {
-  if(notForm(req.params.pageName))
-    next();
-  else{
+
+router.get('/Form/:pageName/:id',async function(req, res, next) {
+  
     const db = req.app.locals.db;
     if(req.params.id=="Yeni_Kayıt"){
       pages=(await db.collection("Sayfalar").findOne({'pageName':req.params.pageName}));
@@ -91,13 +80,11 @@ router.get('/:pageName/:id',async function(req, res, next) {
       _title=req.params.id;
       res.render('form', { title: _title ,url:req.url,content:obj.txt,contentArray:obj.contentArray,collection:pages.collection,id:req.params.id,method:"update" });
     }  
-  }
+  
 });
 
-router.get('/:pageName',async function(req, res, next) {
-  if(notForm(req.params.pageName))
-    next();
-  else{
+router.get('/Form/:pageName',async function(req, res, next) {
+
     const db = req.app.locals.db;
     pages=(await db.collection("Sayfalar").findOne({'pageName':req.params.pageName}));
     if(pages==null )// pages.viewable==undefined
@@ -106,7 +93,7 @@ router.get('/:pageName',async function(req, res, next) {
       obj=(await business.viewGenerator(pages,db,req.url));
       res.render('table', { title: req.params.pageName ,url:req.url,content:obj.txt,collection:pages.collection,maxPage:obj.maxPage});
     }
-  }  
+  
 });
 
 

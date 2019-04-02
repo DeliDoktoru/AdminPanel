@@ -50,7 +50,7 @@ app.use(session({
 
 //permission control
 function checkAllowed(txt){
-  var arr=["public","ajax"];
+  var arr=["public","ajax","favicon.ico"];
   for(val of arr)
   {
     if(txt.includes(val))
@@ -86,16 +86,21 @@ app.use(async function(req,res,next){
       if(_yetkiGrubu==null){
         res.redirect('/');
         return;
-      }
+      } 
       var str = decodeURIComponent(req.url).substring(1);
-      if (str.search('/') != -1)
+      if(str.substring(0,5)=='Form/'){
+        var searchIndex=(str.substring(5,str.length)).search('/');
+        if( searchIndex != -1)
+          str='Form/'+(str.substring(5,str.length)).substring(0, searchIndex);
+      }
+      else if(str.search('/') != -1)
         str = str.substring(0, str.search('/'));
-      result=(await db.collection("Sayfalar").findOne({'pageName': str}));
+      result=(await db.collection("Sayfalar").findOne({'link': str}));
       if(result==null){
         res.redirect('/');
         return;
       }
-      _ID=result._id
+      _ID=result._id;
       boolean=false;
       for(val of _yetkiGrubu.allowedCollection){
         if(val.collectionId==_ID)
@@ -105,7 +110,7 @@ app.use(async function(req,res,next){
             for(items of _yetkiGrubu.allowedCollection){
               r=(await db.collection("Sayfalar").findOne({'_id': ObjectId(items.collectionId)}));
               if(r!=null && r!=undefined)
-                _data.push({text:r.pageName,icon:r.icon});
+                _data.push({text:r.pageName,icon:r.icon,link:r.link});
             }
             res.locals.menu=_data;
             boolean=true;
