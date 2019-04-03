@@ -226,13 +226,14 @@ router.post('/ajax/changeDocument',async function(req, res, next){
 
   
   if(status.ok == undefined || status.ok!=1){
-    renk="danger" 
+    renk="danger"; 
   }
   else{
     (await db.collection("Kullanıcılar").
     updateOne({_id: new ObjectId(req.session.user._id)}, 
     { $inc: { [_data.method]: 1 } }   ));
-    renk="success" 
+
+    renk="success"; 
   }
   res.send( {message:text ,status:status,color:renk});
 });
@@ -242,7 +243,7 @@ router.post('/ajax/filter',async function(req,res,next){
   _collectionName=req.body.collection;
   _query=JSON.parse(req.body.query);
   pages=(await db.collection("Sayfalar").findOne({'collection':_collectionName}));
-  _data=await business.viewBodyGenerator(pages,db,"/"+pages.pageName,_query);
+  _data=await business.viewBodyGenerator(pages,db,"/"+pages.link,_query);
   res.send({status:"ok",data:_data});
 })
 
