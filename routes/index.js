@@ -8,7 +8,6 @@ var mail =require('../mailSender');
 //login
 router.get('/',async function(req, res, next) {
   //mail();
-  b=c;
   res.render('login', { title: 'Giriş' });
 });
 
