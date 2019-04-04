@@ -191,7 +191,7 @@ router.post('/ajax/changeDocument',async function(req, res, next){
   _data=req.body; 
   var text, renk,status={},link;
   try{
-   // await business.checkAllow(req.session.user,db,_data.collection);
+    await business.checkAllow(req.session.user,db,_data.collection);
     link=(await db.collection("Sayfalar").findOne({'collection':_data.collection})).link;
     if(link==undefined || link=="")
       throw "Link bulunamadı";
@@ -201,7 +201,7 @@ router.post('/ajax/changeDocument',async function(req, res, next){
           _data.items=JSON.parse(_data.items);
           _data.items._id=ObjectId(_data.id);
           _data.items.When=new Date();
-          //_data.items.User=req.session.user.userName;
+          _data.items.User=req.session.user.userName;
           (await db.collection(_data.collection).insertOne(_data.items));
           text = "Güncellendi!";
           status.ok=1
@@ -216,7 +216,7 @@ router.post('/ajax/changeDocument',async function(req, res, next){
       case "create":
           _data.items=JSON.parse(_data.items);
           _data.items.When=new Date();
-          //_data.items.User=req.session.user.userName;
+          _data.items.User=req.session.user.userName;
           var r=(await db.collection(_data.collection).insertOne(_data.items));
           status.ok=1;
           text = "Oluşturuldu!";

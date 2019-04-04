@@ -286,5 +286,8 @@ th [type='number']{
 }
 
 .overflowAuto{
-  overflow: auto;
+  overflow: auto !important;
+}
+.table{
+  min-width: 100% !important;
 }

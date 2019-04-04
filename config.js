@@ -4,7 +4,7 @@ const config={
     dataBaseName:'x'
   },
   server:{
-      port:5000
+      port:3000
   }
 };
 

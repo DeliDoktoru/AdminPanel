@@ -81,7 +81,13 @@ var ObjectId = require('mongodb').ObjectID;
                     continue;
                 if(item.type=="select"){
                     if(item.target!=undefined && item.target!=""){
-                        var k=await _db.collection(item.target).findOne({_id:ObjectId(val[item.key])});
+                        var k;
+                        try {
+                            k=await _db.collection(item.target).findOne({_id:ObjectId(val[item.key])});
+                        } catch (error) {
+                            continue;
+                        }
+                        
                         if(k==null){
                             tmp+=`<td></td>`;
                             continue; 
