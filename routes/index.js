@@ -3,9 +3,12 @@ var router = express.Router();
 var business = require('../business');
 var ObjectId = require('mongodb').ObjectID;
 var mail =require('../mailSender');
+
+
 //login
 router.get('/',async function(req, res, next) {
   //mail();
+  b=c;
   res.render('login', { title: 'Giriş' });
 });
 
@@ -187,41 +190,45 @@ router.post('/ajax/changeCollection',async function(req, res, next){
 router.post('/ajax/changeDocument',async function(req, res, next){
   const db = req.app.locals.db;
   _data=req.body; 
-  var text, renk,status={};
+  var text, renk,status={},link;
   try{
-    await business.checkAllow(req.session.user,db,_data.collection);
-    if((await db.command({'listCollections': 1 ,"filter":{"name":_data.collection}})).cursor.firstBatch.length === 0)
-      throw "Böyle Bir Yığın Bulunmamaktadır!"
+   // await business.checkAllow(req.session.user,db,_data.collection);
+    link=(await db.collection("Sayfalar").findOne({'collection':_data.collection})).link;
+    if(link==undefined || link=="")
+      throw "Link bulunamadı";
     switch (_data.method) {
       case "update":
-          (await db.collection(_data.collection).deleteOne({_id:  ObjectId(_data.id)},{user:req.session.user,db:db,collection:_data.collection}));
+          (await db.collection(_data.collection).deleteOne({_id:  ObjectId(_data.id)}));
           _data.items=JSON.parse(_data.items);
           _data.items._id=ObjectId(_data.id);
           _data.items.When=new Date();
-          _data.items.User=req.session.user.userName;
-          (await db.collection(_data.collection).insertOne(_data.items,{user:req.session.user,db:db,collection:_data.collection}));
+          //_data.items.User=req.session.user.userName;
+          (await db.collection(_data.collection).insertOne(_data.items));
           text = "Güncellendi!";
           status.ok=1
+          business.notification(db,_data.method,_data.collection,link+'/'+_id,{xx:"hello"});
         break;
       case "delete":
-          (await db.collection(_data.collection).deleteOne({_id:ObjectId(_data.id)},{user:req.session.user,db:db,collection:_data.collection}));
+          (await db.collection(_data.collection).deleteOne({_id:ObjectId(_data.id)}));
           text = "Silindi!";
           status.ok=1
+          business.notification(db,_data.method,_data.collection,link,{xx:"hello"});
         break;
       case "create":
           _data.items=JSON.parse(_data.items);
           _data.items.When=new Date();
-          _data.items.User=req.session.user.userName;
-          (await db.collection(_data.collection).insertOne(_data.items,{user:req.session.user,db:db,collection:_data.collection}));
+          //_data.items.User=req.session.user.userName;
+          var r=(await db.collection(_data.collection).insertOne(_data.items));
           status.ok=1;
           text = "Oluşturuldu!";
+          business.notification(db,_data.method,_data.collection,link+'/'+r.insertedId,{xx:"hello"});
         break;
       default:
         text = "Eksik bilgi!";
     }
   }catch (error) {
     status.ok=0;
-    text = error;
+    text = error.message;
   }
 
   
@@ -229,9 +236,10 @@ router.post('/ajax/changeDocument',async function(req, res, next){
     renk="danger"; 
   }
   else{
-    (await db.collection("Kullanıcılar").
+    //burası kullanıcıların count artırma
+    /*(await db.collection("Kullanıcılar").
     updateOne({_id: new ObjectId(req.session.user._id)}, 
-    { $inc: { [_data.method]: 1 } }   ));
+    { $inc: { [_data.method]: 1 } }   ));*/
 
     renk="success"; 
   }

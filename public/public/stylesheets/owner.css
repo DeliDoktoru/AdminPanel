@@ -284,3 +284,7 @@ th [type='number']{
   padding: 0 !important;
   height: auto !important;
 }
+
+.overflowAuto{
+  overflow: auto;
+}

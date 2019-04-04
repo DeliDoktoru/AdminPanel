@@ -12,6 +12,21 @@ var ObjectId = require('mongodb').ObjectID;
 // view engine setup
 app.set('views', path.join(__dirname, 'views'));
 app.set('view engine', 'pug');
+//error catchers
+process.on('uncaughtException', function(err) {
+  fs.appendFile(path.join(__dirname, 'error.log'),err.message+"\n->"+err.stack+"\n",function(error){
+    console.log(error);
+  });
+  console.log(err.stack);
+ 
+});
+process.on('unhandledRejection', function(err) {
+  fs.appendFile(path.join(__dirname, 'error.log'),err.message+"\n->"+err.stack+"\n",function(error){
+    if(error) console.log(error);
+  });
+  console.log(err.stack);
+ 
+});
 
 //morgan loger customize
 //file
@@ -59,7 +74,9 @@ function checkAllowed(txt){
   return false;
 }
 app.use(async function(req,res,next){
-   
+  
+  next();
+  return;
   if(checkAllowed(req.url)){
     next();
     return;

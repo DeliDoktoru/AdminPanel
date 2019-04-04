@@ -1,4 +1,8 @@
 var ObjectId = require('mongodb').ObjectID;
+    String.prototype.replaceAll = function(search, replacement) {
+        var target = this;
+        return target.replace(new RegExp(search, 'g'), replacement);
+    };
     setValuesToinputs=function(inputs,values){
         for(var i=0;i<inputs.length;i++){
             if(inputs[i].type=="array"){
@@ -123,9 +127,9 @@ var ObjectId = require('mongodb').ObjectID;
         header=await viewHeaderGenerator(_page,_db,_url);
         //body
         bodyResult=await viewBodyGenerator(_page,_db,_url,_query);
-       
+        count=_page.content.filter(x=>x.tableViewable==true).length;
         _txt=`
-            <table class="table">
+            <table class="table" style="width:${count*200}px">
                 <thead>
                     ${header}
                 </thead>
@@ -230,7 +234,7 @@ var ObjectId = require('mongodb').ObjectID;
                 }
                 else{
                     if(item.items==undefined)
-                        throw "Parçalar bulunamadı"
+                        throw "Parçalar bulunamadı";
                     arr=item.items;
                     tmpObj=await inputGenerator(arr,_db);
                     _contentArray[tmp.key]=`
@@ -309,14 +313,16 @@ var ObjectId = require('mongodb').ObjectID;
         
         if(user==undefined){
             throw "Erişim Engellendi!";
-          }
-          if(db==undefined){
+        }
+        if(db==undefined){
             throw "Bağlantı bulunamadı!";
           }
-          if(collection==undefined  ){
+        if(collection==undefined  ){
             throw "Yığın bulunamadı!";
           }
-    
+        if((await db.command({'listCollections': 1 ,"filter":{"name":collection}})).cursor.firstBatch.length === 0)
+          throw "Böyle Bir Yığın Bulunmamaktadır!"
+          
         _grupId=user.grup;
         if(_grupId==undefined){
             throw "Kişinin Grup Yetkisi Bulunamadı!";
@@ -336,9 +342,36 @@ var ObjectId = require('mongodb').ObjectID;
         }
         throw "Erişim Engellendi!";
     }
+    
+
+    notification=async function(_db,_method,_topic,_link,_data){
+        var Users=await _db.collection("Kullanıcı Bildirim Talepleri").find({topics:{topic:_topic}}).toArray();
+        if(!Users.length)
+            return;
+        var design=await _db.collection("Tasarımlar").findOne({key:_method});
+        if(design==null)
+            return;
+        var regex = /\{\$.*?\$\}/g;
+        var founds=design.text.match(regex);
+        for(user of Users){
+          var txt="";  
+          for(found of founds ){
+            tmp=found.substring(2, found.length-2);
+            txt=design.text.replaceAll("{\\$"+tmp+"\\$}",_data[tmp])  
+          }
+          await _db.collection("Kullanıcı Konu Bildirimleri").insertOne({
+              user: user._id,
+              text:txt,
+              desginKey:design.key,
+              link:_link,
+              topic:_topic
+          });
+        }
+    }
 module.exports={inputGenerator:inputGenerator,
                 setValuesToinputs:setValuesToinputs,
                 viewGenerator:viewGenerator,
                 viewBodyGenerator:viewBodyGenerator,
-                checkAllow:checkAllow
+                checkAllow:checkAllow,
+                notification:notification
             }
