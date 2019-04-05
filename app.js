@@ -1,3 +1,4 @@
+/* #region  initilaze */
 var createError = require('http-errors');
 var express = require('express');
 var path = require('path');
@@ -7,30 +8,35 @@ var session = require('express-session');
 var indexRouter = require('./routes/index');
 var usersRouter = require('./routes/users');
 var app = express();
-var fs=require("fs");
+var fs = require("fs");
 var ObjectId = require('mongodb').ObjectID;
 // view engine setup
 app.set('views', path.join(__dirname, 'views'));
 app.set('view engine', 'pug');
-//error catchers
-process.on('uncaughtException', function(err) {
-  fs.appendFile(path.join(__dirname, 'error.log'),err.message+"\n->"+err.stack+"\n",function(error){
+/* #endregion */
+
+/* #region  error catchers */
+process.on('uncaughtException', function (err) {
+  fs.appendFile(path.join(__dirname, 'error.log'), err.message + "\n->" + err.stack + "\n", function (error) {
     console.log(error);
   });
   console.log(err.stack);
- 
+
 });
-process.on('unhandledRejection', function(err) {
-  fs.appendFile(path.join(__dirname, 'error.log'),err.message+"\n->"+err.stack+"\n",function(error){
-    if(error) console.log(error);
+process.on('unhandledRejection', function (err) {
+  fs.appendFile(path.join(__dirname, 'error.log'), err.message + "\n->" + err.stack + "\n", function (error) {
+    if (error) console.log(error);
   });
   console.log(err.stack);
- 
-});
 
-//morgan loger customize
+});
+/* #endregion */
+
+/* #region   morgan loger customize*/
 //file
-var accessLogStream = fs.createWriteStream(path.join(__dirname, 'access.log'), { flags: 'a' })
+var accessLogStream = fs.createWriteStream(path.join(__dirname, 'access.log'), {
+  flags: 'a'
+})
 app.use(logger(function (tokens, req, res) {
   return [
     tokens.method(req, res),
@@ -40,8 +46,10 @@ app.use(logger(function (tokens, req, res) {
     tokens['response-time'](req, res), 'ms'
   ].join(' ')
 }, {
-  skip: function (req, res) { return req.url.search("public")!=-1  },
-  stream: accessLogStream 
+  skip: function (req, res) {
+    return req.url.search("public") != -1
+  },
+  stream: accessLogStream
 }));
 //console
 app.use(logger(function (tokens, req, res) {
@@ -53,95 +61,112 @@ app.use(logger(function (tokens, req, res) {
     tokens['response-time'](req, res), 'ms'
   ].join(' ')
 }, {
-  skip: function (req, res) { return req.url.search("public")!=-1  },
+  skip: function (req, res) {
+    return req.url.search("public") != -1
+  },
 }));
 
+/* #endregion */
+
+/* #region  session */
 app.use(session({
-  secret:'3D75D274B997B53CFD2892F69F54BC28',
+  secret: '3D75D274B997B53CFD2892F69F54BC28',
   resave: false,
   saveUninitialized: true,
   //cookie: { secure: true }
 }));
 
-//permission control
-function checkAllowed(txt){
-  var arr=["public","ajax","favicon.ico"];
-  for(val of arr)
-  {
-    if(txt.includes(val))
+/* #endregion */
+
+/* #region  permission control */
+function checkAllowed(txt) {
+  var arr = ["public", "ajax", "favicon.ico"];
+  for (val of arr) {
+    if (txt.includes(val))
       return true;
   }
   return false;
 }
-app.use(async function(req,res,next){
-  
-  
-  if(checkAllowed(req.url)){
+app.use(async function (req, res, next) {
+
+  if (checkAllowed(req.url)) {
     next();
     return;
   }
-  if(req.url=="/"){
-    if(req.session.user==undefined || req.session.user._id==undefined){
+  if (req.url == "/") {
+    if (req.session.user == undefined || req.session.user._id == undefined) {
       next();
       return;
-    }
-    else
+    } else
       res.redirect('/dashboard');
-  }    
-  else{  
-    if(req.session.user==undefined || req.session.user._id==undefined)
+  } else {
+    if (req.session.user == undefined || req.session.user._id == undefined)
       res.redirect('/');
-    else{
+    else {
       const db = req.app.locals.db;
-      _grupId=req.session.user.grup;
-      if(_grupId==undefined){
+      _grupId = req.session.user.grup;
+      if (_grupId == undefined) {
         res.redirect('/');
         return;
       }
-      _yetkiGrubu=await db.collection("Yetki Grupları").findOne({'_id': ObjectId(_grupId)});
-      if(_yetkiGrubu==null){
+      _yetkiGrubu = await db.collection("Yetki Grupları").findOne({
+        '_id': ObjectId(_grupId)
+      });
+      if (_yetkiGrubu == null) {
         res.redirect('/');
         return;
-      } 
+      }
       var str = decodeURIComponent(req.url).substring(1);
-      if(str.substring(0,5)=='Form/'){
-        var searchIndex=(str.substring(5,str.length)).search('/');
-        if( searchIndex != -1)
-          str='Form/'+(str.substring(5,str.length)).substring(0, searchIndex);
-      }
-      else if(str.search('/') != -1)
+      if (str.substring(0, 5) == 'Form/') {
+        var searchIndex = (str.substring(5, str.length)).search('/');
+        if (searchIndex != -1)
+          str = 'Form/' + (str.substring(5, str.length)).substring(0, searchIndex);
+      } else if (str.search('/') != -1)
         str = str.substring(0, str.search('/'));
-      result=(await db.collection("Sayfalar").findOne({'link': str}));
-      if(result==null){
+      result = (await db.collection("Sayfalar").findOne({
+        'link': str
+      }));
+      if (result == null) {
         res.redirect('/');
         return;
       }
-      _ID=result._id;
-      boolean=false;
-      for(val of _yetkiGrubu.allowedCollection){
-        if(val.collectionId==_ID)
-          {
-            //render menu items
-            var _data=[]
-            for(items of _yetkiGrubu.allowedCollection){
-              r=(await db.collection("Sayfalar").findOne({'_id': ObjectId(items.collectionId)}));
-              if(r!=null && r!=undefined && r.showMenu)
-                _data.push({text:r.pageName,icon:r.icon,link:r.link});
-            }
-            res.locals.menu=_data;
-            boolean=true;
-            break;
+      _ID = result._id;
+      boolean = false;
+      for (val of _yetkiGrubu.allowedCollection) {
+        if (val.collectionId == _ID) {
+          //render menu items
+          var _data = []
+          for (items of _yetkiGrubu.allowedCollection) {
+            r = (await db.collection("Sayfalar").findOne({
+              '_id': ObjectId(items.collectionId)
+            }));
+            if (r != null && r != undefined && r.showMenu)
+              _data.push({
+                text: r.pageName,
+                icon: r.icon,
+                link: r.link
+              });
           }
+          res.locals.menu = _data;
+          boolean = true;
+          break;
+        }
       }
-      if(boolean)
+      if (boolean)
         next();
       else
         res.redirect('/');
     }
   }
 });
+/* #endregion */
+
+/* #region  others */
+
 app.use(express.json());
-app.use(express.urlencoded({ extended: false }));
+app.use(express.urlencoded({
+  extended: false
+}));
 app.use(cookieParser());
 app.use(express.static(path.join(__dirname, 'public')));
 
@@ -149,12 +174,12 @@ app.use('/', indexRouter);
 app.use('/users', usersRouter);
 
 // catch 404 and forward to error handler
-app.use(function(req, res, next) {
+app.use(function (req, res, next) {
   next(createError(404));
 });
 
 // error handler
-app.use(function(err, req, res, next) {
+app.use(function (err, req, res, next) {
   // set locals, only providing error in development
   res.locals.message = err.message;
   res.locals.error = req.app.get('env') === 'development' ? err : {};
@@ -165,3 +190,4 @@ app.use(function(err, req, res, next) {
 });
 
 module.exports = app;
+/* #endregion */

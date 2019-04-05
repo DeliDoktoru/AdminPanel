@@ -1,48 +1,50 @@
-
-
 var editor;
 var backPageUrl;
-//pagination sıra ve max
-var pageIndex = 0, total = 5;
-var pr = document.querySelector( '.paginate.left' );
-var pl = document.querySelector( '.paginate.right' );
-//pagination
-function dataState(){
-  pr.setAttribute( 'data-state', pageIndex === 0 || pageIndex ===-1? 'disabled' : '' );
-  pl.setAttribute( 'data-state', pageIndex === total - 1 ? 'disabled' : '' );
+/* #region   pagination sıra ve max*/
+var pageIndex = 0,
+  total = 5;
+var pr = document.querySelector('.paginate.left');
+var pl = document.querySelector('.paginate.right');
+/* #endregion */
+/* #region  pagination */
+function dataState() {
+  pr.setAttribute('data-state', pageIndex === 0 || pageIndex === -1 ? 'disabled' : '');
+  pl.setAttribute('data-state', pageIndex === total - 1 ? 'disabled' : '');
 }
+/* #endregion */
 $(function () {
-  //<pagination
-    
 
-    function slide(offset) {
-      pageIndex = Math.min( Math.max( pageIndex + offset, 0 ), total - 1 );
-      $(".counter").attr("value",pageIndex+1);
-      document.querySelector( '.counter' ).innerHTML = ( pageIndex + 1 ) + ' / ' + total;
-    }
-   
-    if(pr!=null && pl !=null ){
-      pr.onclick = slide.bind( this, -1 );
-      pl.onclick = slide.bind( this, 1 );
-      slide(0);
-      dataState();
-    }
-    
-  //>
-  //<notfication
+
+  /* #region   pagination*/
+  function slide(offset) {
+    pageIndex = Math.min(Math.max(pageIndex + offset, 0), total - 1);
+    $(".counter").attr("value", pageIndex + 1);
+    document.querySelector('.counter').innerHTML = (pageIndex + 1) + ' / ' + total;
+  }
+
+  if (pr != null && pl != null) {
+    pr.onclick = slide.bind(this, -1);
+    pl.onclick = slide.bind(this, 1);
+    slide(0);
+    dataState();
+  }
+  /* #endregion */
+
+  /* #region  notfication */
   if (Cookies.get('color') !== undefined && Cookies.get('color') !== undefined) {
     showNotification('top', 'right', Cookies.get('color'), Cookies.get('message'));
     Cookies.remove('color');
     Cookies.remove('message');
   }
-  //>
-  //<menu seçiminde seçileni active yapma
+  /* #endregion */
+  /* #region  menu seçiminde seçileni active yapma */
   var str = decodeURIComponent(window.location.pathname).substring(1);
   if (str.search('/') != -1)
     str = str.substring(0, str.search('/'))
   $(".nav>li>a[href='/" + str + "']").parent().addClass("active")
-  //>
-  //<menu başlığı
+  /* #endregion */
+
+  /* #region  menu başlığı */
   var str = decodeURIComponent(window.location.pathname),
     matches = [],
     tmp = "",
@@ -63,20 +65,20 @@ $(function () {
   else
     backPageUrl = links[links.length - 2];
   $(".content-title").html(tmp);
-  //>
-  //<text editor
-  $(function() {
-    if($("[type='editor']").length!=0){
-      var inputHtml=$("[type='editor']").val();
+  /* #endregion */
+  /* #region   text editor*/
+  $(function () {
+    if ($("[type='editor']").length != 0) {
+      var inputHtml = $("[type='editor']").val();
       replaceElementTag("[type='editor']", '<div></div>');
       $("[type='editor']").froalaEditor();
       $("[type='editor']").froalaEditor('html.set', inputHtml);
-      
-      
+
+
     }
   });
-  //>
-  //<json editor
+  /* #endregion */
+  /* #region   json editor*/
   var container = document.getElementById("jsoneditor");
   if (container != undefined) {
     var json = JSON.parse(container.getAttribute("data"));
@@ -90,8 +92,8 @@ $(function () {
     editor.set(json);
 
   }
-  //>
-  //<form buttons
+  /* #endregion */
+  /* #region   form buttons*/
   $("body").delegate("button[action-method]", "click", function () {
     _method = $(this).attr("action-method");
     if (_method == "addArrayItem") {
@@ -136,144 +138,152 @@ $(function () {
     } else if (_method == "delete") {
       _collection = $(this).attr("collection");
       _id = $(this).attr("id");
-      changeDocument(_method, _id, _collection, viewToJson(),true);
+      changeDocument(_method, _id, _collection, viewToJson(), true);
     }
   });
+  /* #endregion */
   //>
-  //<helper
-  $("body").delegate("[h]","change",function(){
-    _helper=$(this).attr("h");
-    _val=$(this).val();
-  if(_helper=="icon"){
-    $(this).parent().find(">i").attr("class",_val);
-  }
-  }); 
+  /* #region  helper */
+  $("body").delegate("[h]", "change", function () {
+    _helper = $(this).attr("h");
+    _val = $(this).val();
+    if (_helper == "icon") {
+      $(this).parent().find(">i").attr("class", _val);
+    }
+  });
   $("[h]").trigger("change");
-//>
+  /* #endregion */
 });
 
- 
- //<Çıkış yap
- function exit(){
+/* #region  get user Notifications */
+function getUserNotifications(){
   $.ajax({
-    type:"POST", 
-    url:"/ajax/exit",
-    dataType: "json", 
-    success:function(result){
-        showNotification('top','right',result.color,result.message);
-        if(result.status)
-            location.href="/";
+    type: "POST",
+    url: "/ajax/notifications",
+    dataType: "json",
+    success: function (result) {
+      console.log(result);
     },
     error: function (jqXHR, exception) {
-        console.log(jqXHR);
-        console.log(exception);
+      console.log(jqXHR);
+      console.log(exception);
     }
-}); 
- }
- //>
- //<zorunlu alan kontrolu
- function enforcedControl(){
-  var result=false;
-  $("[enforced]").each(function(){
-    if ($(this).attr("type") == "editor" ){
-      htmlText=$(this).froalaEditor('html.get', true)
-      if(htmlText=="" || htmlText=="<p></p>"){
-        result=true;
+  });
+}
+
+/* #endregion */
+/* #region  Çıkış yap */
+function exit() {
+  $.ajax({
+    type: "POST",
+    url: "/ajax/exit",
+    dataType: "json",
+    success: function (result) {
+      showNotification('top', 'right', result.color, result.message);
+      if (result.status)
+        location.href = "/";
+    },
+    error: function (jqXHR, exception) {
+      console.log(jqXHR);
+      console.log(exception);
+    }
+  });
+}
+/* #endregion */
+/* #region  zorunlu alan kontrolu */
+function enforcedControl() {
+  var result = false;
+  $("[enforced]").each(function () {
+    if ($(this).attr("type") == "editor") {
+      htmlText = $(this).froalaEditor('html.get', true)
+      if (htmlText == "" || htmlText == "<p></p>") {
+        result = true;
         $(this).css("border-bottom", "4px solid red");
       }
-    } 
-    else if($(this).val()=="" || $(this).val()==undefined || $(this).val()==null){
-      result=true;
+    } else if ($(this).val() == "" || $(this).val() == undefined || $(this).val() == null) {
+      result = true;
       $(this).css("border-bottom", "2px solid red");
     }
-    
+
   });
-  if(result)
+  if (result)
     showNotification('top', 'right', 'danger', 'Zorunlu alanları doldurmanız gerekmektedir.');
   return result;
- }
- $("body").delegate("[enforced]", "change keyup paste", function (){
-   if($(this).val()!="" && $(this).val()!=undefined && $(this).val()!=null)
+}
+$("body").delegate("[enforced]", "change keyup paste", function () {
+  if ($(this).val() != "" && $(this).val() != undefined && $(this).val() != null)
     $(this).css("border-bottom", "");
- });
- //>
- //<max min kontrolu
- function maxMinControl(){
-  var result=false,kucuk=false,buyuk=false,fazlaKarakter=false,azKarakter=false;
-  $("[max],[min]").each(function(){
-    if($(this).val()!="" && $(this).val()!=undefined && $(this).val()!=null){
-      if($(this).attr("max")!=undefined)
-      {
-        var _max=parseInt($(this).attr("max"));
+});
+/* #endregion */
+/* #region  max min kontrolu */
+function maxMinControl() {
+  var result = false,
+    kucuk = false,
+    buyuk = false,
+    fazlaKarakter = false,
+    azKarakter = false;
+  $("[max],[min]").each(function () {
+    if ($(this).val() != "" && $(this).val() != undefined && $(this).val() != null) {
+      if ($(this).attr("max") != undefined) {
+        var _max = parseInt($(this).attr("max"));
 
-        if($(this).attr("type")=="number")
-        {
-          var tmp=parseInt($(this).val());
-          if(!isNaN(_max) && !isNaN(tmp) && tmp > _max)
-          {
+        if ($(this).attr("type") == "number") {
+          var tmp = parseInt($(this).val());
+          if (!isNaN(_max) && !isNaN(tmp) && tmp > _max) {
             $(this).css("border-bottom", "2px solid red");
-            buyuk=true;
-            result=true;
+            buyuk = true;
+            result = true;
           }
-        }
-        else
-        {
-          if(!isNaN(_max) && $(this).val().length > _max)
-          {
+        } else {
+          if (!isNaN(_max) && $(this).val().length > _max) {
             $(this).css("border-bottom", "2px solid red");
-            fazlaKarakter=true;
-            result=true;
+            fazlaKarakter = true;
+            result = true;
           }
 
         }
-      
+
       }
-      if($(this).attr("min")!=undefined)
-      {
-        _min=parseInt($(this).attr("min"));
-        if($(this).attr("type")=="number")
-        {
-          var tmp=parseInt($(this).val());
-          if(!isNaN(_min) && !isNaN(tmp) && tmp < _min)
-          {
+      if ($(this).attr("min") != undefined) {
+        _min = parseInt($(this).attr("min"));
+        if ($(this).attr("type") == "number") {
+          var tmp = parseInt($(this).val());
+          if (!isNaN(_min) && !isNaN(tmp) && tmp < _min) {
             $(this).css("border-bottom", "2px solid blue");
-            kucuk=true;
-            result=true;
+            kucuk = true;
+            result = true;
           }
-        }
-        else
-        {
-          if(!isNaN(_min) && $(this).val().length < _min)
-          {
+        } else {
+          if (!isNaN(_min) && $(this).val().length < _min) {
             $(this).css("border-bottom", "2px solid blue");
-            azKarakter=true;
-            result=true;
+            azKarakter = true;
+            result = true;
           }
         }
       }
     }
   });
-  if(azKarakter)
+  if (azKarakter)
     showNotification('top', 'right', 'info', 'Girdiğiniz Karakter Sayısı Yeterli Değil.');
-  if(fazlaKarakter)
+  if (fazlaKarakter)
     showNotification('top', 'right', 'danger', 'Girdiğiniz Karakter Sayısı Çok Fazla.');
-  if(kucuk)
+  if (kucuk)
     showNotification('top', 'right', 'info', 'Girdiğiniz Değer Yeterli Değil.');
-  if(buyuk)
+  if (buyuk)
     showNotification('top', 'right', 'danger', 'Girdiğiniz Değer Fazla.');
   return result;
- }
- $("body").delegate("[enforced]", "change keyup paste", function (){
-   if($(this).val()!="" && $(this).val()!=undefined && $(this).val()!=null)
+}
+$("body").delegate("[enforced]", "change keyup paste", function () {
+  if ($(this).val() != "" && $(this).val() != undefined && $(this).val() != null)
     $(this).css("border-bottom", "");
- });
- //>
-//<bütün kontroller
-function controls(){
+});
+/* #endregion */
+/* #region  bütün kontroller */
+function controls() {
   return (enforcedControl() || maxMinControl())
 }
-//>
-//<loading animasyonu
+/* #endregion */
+/* #region   loading animasyonu*/
 var stop = false;
 var _height = $(window).height();
 var _width = $(window).width();
@@ -300,8 +310,8 @@ function stopLoading() {
 
 }
 
-//>
-//<form view ini json çevirme 
+/* #endregion */
+/* #region   form view ini json çevirme */
 var resultData = {};
 
 function viewToJson(row, data) {
@@ -326,117 +336,124 @@ function viewToJson(row, data) {
 
     } else if ($(this).attr("type") == "password") {
       data[_key] = MD5($(this).val());
-    }else if($(this).attr("type") == "select"){
-      if($(this).val()=="true")
-        data[_key]=true;
-      else if($(this).val()=="false")
-        data[_key]=false;
+    } else if ($(this).attr("type") == "select") {
+      if ($(this).val() == "true")
+        data[_key] = true;
+      else if ($(this).val() == "false")
+        data[_key] = false;
       else
-        data[_key]=$(this).val();
-    }else if($(this).attr("type") == "number"){
-      data[_key]=parseFloat($(this).val().replaceAll(",","."));
-    }else if($(this).attr("type") == "editor"){
-      data[_key]=$(this).froalaEditor('html.get', true);
-    }
-    else {
+        data[_key] = $(this).val();
+    } else if ($(this).attr("type") == "number") {
+      data[_key] = parseFloat($(this).val().replaceAll(",", "."));
+    } else if ($(this).attr("type") == "editor") {
+      data[_key] = $(this).froalaEditor('html.get', true);
+    } else {
       data[_key] = $(this).val();
     }
 
   });
   return data;
 }
-//>
-//<database document filter
-var query={filter:{},limit:10,page:1,sort:{}};
-$("body").delegate("thead>tr>th>[sort]","click",function(){
-  _key=$(this).attr("sort");
-  if(query.sort[_key]==undefined)
-    query.sort[_key]=1;
+/* #endregion */
+/* #region  document filter */
+var query = {
+  filter: {},
+  limit: 10,
+  page: 1,
+  sort: {}
+};
+$("body").delegate("thead>tr>th>[sort]", "click", function () {
+  _key = $(this).attr("sort");
+  if (query.sort[_key] == undefined)
+    query.sort[_key] = 1;
   else
-    query.sort[_key]=query.sort[_key]*-1;
+    query.sort[_key] = query.sort[_key] * -1;
   applyFilter();
 });
-$("body").delegate("thead>tr>th>[type]","change",function(){
-  _key=$(this).attr("data-key");
-   if($(this).attr("type")=="number")
-   {
-    query.filter[_key]={};
-    var _max=parseFloat($(`[data-key='${_key}'][m='max']`).val().replaceAll(",","."));
-    var _min=parseFloat($(`[data-key='${_key}'][m='min']`).val().replaceAll(",","."));
-    if(!isNaN(_max) && _max!=null)
-      query.filter[_key].$lte=_max;
+$("body").delegate("thead>tr>th>[type]", "change", function () {
+  _key = $(this).attr("data-key");
+  if ($(this).attr("type") == "number") {
+    query.filter[_key] = {};
+    var _max = parseFloat($(`[data-key='${_key}'][m='max']`).val().replaceAll(",", "."));
+    var _min = parseFloat($(`[data-key='${_key}'][m='min']`).val().replaceAll(",", "."));
+    if (!isNaN(_max) && _max != null)
+      query.filter[_key].$lte = _max;
     else
       delete query.filter[_key].$lt;
-    if(!isNaN(_min) && _min!=null)
-      query.filter[_key].$gte=_min;
-    else      
+    if (!isNaN(_min) && _min != null)
+      query.filter[_key].$gte = _min;
+    else
       delete query.filter[_key].$gt;
-    if(jQuery.isEmptyObject(query.filter[_key]))  
+    if (jQuery.isEmptyObject(query.filter[_key]))
       delete query.filter[_key];
-  } 
-  else if($(this).val()=="")
-  {
+  } else if ($(this).val() == "") {
     delete query.filter[_key]
-  }
-  else
-  {
-    if($(this).attr("type")=="text")
-      query.filter[_key]={ $regex: `.*${$(this).val()}.*`,$options: 'i'};
-     
-    else 
-      query.filter[_key]=$(this).val();
+  } else {
+    if ($(this).attr("type") == "text")
+      query.filter[_key] = {
+        $regex: `.*${$(this).val()}.*`,
+        $options: 'i'
+      };
+
+    else
+      query.filter[_key] = $(this).val();
   }
   //pagination
-  pageIndex=0;
-  pr.setAttribute( 'data-state', 'disabled' );
+  pageIndex = 0;
+  pr.setAttribute('data-state', 'disabled');
   applyFilter();
 });
-$("body").delegate(".paginate","click",function(){
-  if($(this).attr("data-state")!="disabled"){
+$("body").delegate(".paginate", "click", function () {
+  if ($(this).attr("data-state") != "disabled") {
     applyFilter();
   }
   dataState();
 });
-$("body").delegate("[key='limit']","change",function(){
+$("body").delegate("[key='limit']", "change", function () {
   //pagination
-  pageIndex=0;
-  pr.setAttribute( 'data-state', 'disabled' );
+  pageIndex = 0;
+  pr.setAttribute('data-state', 'disabled');
   applyFilter();
 })
-function applyFilter(){
-  var _data={};
-  _data.collection=$("[collection]").attr("collection");
-  
-  query.limit=parseInt($("[key='limit']").val());
-  query.page=pageIndex+1;
-  _data.query=JSON.stringify(query);
+
+function applyFilter() {
+  var _data = {};
+  _data.collection = $("[collection]").attr("collection");
+
+  query.limit = parseInt($("[key='limit']").val());
+  query.page = pageIndex + 1;
+  _data.query = JSON.stringify(query);
   $.ajax({
-    type:"POST", 
-    url:"/ajax/filter",
-    dataType: "json", 
+    type: "POST",
+    url: "/ajax/filter",
+    dataType: "json",
     data: _data,
-    success:function(result){
-       if(result.data.body=="")
-        pageIndex=-1;
-       $(".table tbody").html(result.data.body);
-       //pagination
-       total=result.data.maxPage;
-       document.querySelector('.counter').innerHTML = (pageIndex+1) + ' / ' + result.data.maxPage;
-       pl.setAttribute( 'data-state', pageIndex === total - 1 ? 'disabled' : '' );
+    success: function (result) {
+      if (!result.status) {
+        showNotification('top', 'right', 'info', result.text);
+        return;
+      }
+      if (result.data.body == "")
+        pageIndex = -1;
+      $(".table tbody").html(result.data.body);
+      //pagination
+      total = result.data.maxPage;
+      document.querySelector('.counter').innerHTML = (pageIndex + 1) + ' / ' + result.data.maxPage;
+      pl.setAttribute('data-state', pageIndex === total - 1 ? 'disabled' : '');
     },
     error: function (jqXHR, exception) {
-        console.log(jqXHR);
-        console.log(exception);
+      console.log(jqXHR);
+      console.log(exception);
     }
-}); 
+  });
 }
-//>
-//< database document işlemleri
-changeDocument = function (_method, _id, _collection, _data,goBackPage) {
-  if(_method!="delete" && controls())
+/* #endregion */
+/* #region  database document işlemleri */
+changeDocument = function (_method, _id, _collection, _data, goBackPage) {
+  if (_method != "delete" && controls())
     return;
-  if(goBackPage==undefined)
-    goBackPage=false;
+  if (goBackPage == undefined)
+    goBackPage = false;
   data = {};
 
   if (_id != "")
@@ -456,9 +473,9 @@ changeDocument = function (_method, _id, _collection, _data,goBackPage) {
     success: function (result) {
       Cookies.set('color', result.color);
       Cookies.set('message', result.message);
-      if(goBackPage)
+      if (goBackPage)
         location.href = backPageUrl;
-      else if (_method == "delete" )
+      else if (_method == "delete")
         location.reload();
       else
         location.href = backPageUrl;
@@ -494,10 +511,11 @@ changeDocument = function (_method, _id, _collection, _data,goBackPage) {
   }
 }
 
-//>
-//< database collection işlemleri
+/* #endregion */
+/* #region  database collection işlemleri */
+
 changeCollection = function (_method, _collectionName, _oldCollectionName, _options) {
-  if(_method!="delete" && controls())
+  if (_method != "delete" && controls())
     return;
   data = {};
 
@@ -558,4 +576,4 @@ changeCollection = function (_method, _collectionName, _oldCollectionName, _opti
     $.ajax(_ajax);
   }
 }
-//>
+/* #endregion */
