@@ -291,3 +291,6 @@ th [type='number']{
 .table{
   min-width: 100% !important;
 }
+#notifCount{
+display: inline;
+}

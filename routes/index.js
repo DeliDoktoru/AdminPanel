@@ -357,7 +357,9 @@ router.post('/ajax/changeDocument', async function (req, res, next) {
     }
   } catch (error) {
     status.ok = 0;
-    text = error.message;
+    if(error.message)
+      error=error.message;
+    text = error;
   }
 
 
@@ -397,6 +399,8 @@ router.post('/ajax/filter', async function (req, res, next) {
       data: _data
     });
   } catch (error) {
+    if(error.message)
+      error=error.message;
     res.send({
       status: 0,
       text: error
@@ -407,22 +411,39 @@ router.post('/ajax/filter', async function (req, res, next) {
 
 router.post('/ajax/notifications', async function (req, res, next) {
   const db = req.app.locals.db;
-  var text, renk, status = {},
+  var text, renk, status ,
     _data = [];
   var user = req.session.user;
   try {
     if (user == null || user._id == null)
       throw "Kullanıcı bilgileriniz bulunamadı";
-    _data = await db.collection("Kullanıcı Konu Bildirimleri").find({
-      user: user._id,
-      readed: false
-    }).toArray();
-    status.ok = 1;
+    _data= await db.collection("Kullanıcı Konu Bildirimleri").aggregate([
+      {
+        $match:{user: user._id,readed: false}
+      },
+      {
+        $lookup:{
+            from: "Tasarımlar",       
+            localField: "desginKey",   
+            foreignField: "key", 
+            as: "design"         
+        }
+      },
+      {  
+        $unwind:"$design" 
+      },
+      {
+        $project:{text:1,link:1,design:{title:1,icon:1}}
+      }
+    ]).toArray();
+    status = 1;
   } catch (error) {
-    status.ok = 0;
+    status = 0;
+    if(error.message)
+      error=error.message;  
     text = error;
   }
-  if (status.ok == undefined || status.ok != 1) {
+  if (status == undefined || status != 1) {
     renk = "danger";
   } else {
     renk = "success";

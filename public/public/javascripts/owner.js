@@ -162,7 +162,25 @@ function getUserNotifications(){
     url: "/ajax/notifications",
     dataType: "json",
     success: function (result) {
-      console.log(result);
+      if (!result.status) {
+        showNotification('top', 'right', 'info', result.text);
+        return;
+      }
+      var tmp="";
+      for(item of result.data){
+        tmp+=`<li><a href="#">${item.design.title}</a></li>`;
+      }
+      if(result.data.length){
+        $("#bell").css({color:"green"});
+        $("#notifCount").text(result.data.length);
+      }
+      else{
+        $("#bell").css({color:"#9A9A9A"});
+        $("#notifCount").text("")
+      }
+
+
+      $("#Notifications").html(tmp);
     },
     error: function (jqXHR, exception) {
       console.log(jqXHR);
@@ -170,7 +188,8 @@ function getUserNotifications(){
     }
   });
 }
-
+getUserNotifications();
+setInterval(getUserNotifications, 60000);
 /* #endregion */
 /* #region  Çıkış yap */
 function exit() {
