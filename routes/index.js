@@ -52,6 +52,8 @@ router.get('/duyuru', async function (req, res, next) {
   });
 });
 
+//router.get('/bildirimler',);
+
 router.get('/database/:collectionName', async function (req, res, next) {
   if (req.params.collectionName == "Yeni_Yığın")
     res.render('collectionViewer', {
@@ -151,7 +153,7 @@ router.get('/Form/:pageName/:id', async function (req, res, next) {
     pages = (await db.collection("Sayfalar").findOne({
       'pageName': req.params.pageName
     }));
-    result = business.setValuesToinputs(pages.content, _data);
+    result =(await business.setValuesToinputs(pages.content, _data));
     obj = (await business.inputGenerator(result, db));
     _title = req.params.id;
     res.render('form', {
@@ -235,7 +237,7 @@ router.post('/ajax/login', async function (req, res, next) {
 
   }
 });
-router.post('/ajax/exit', async function (req, res, next) {
+router.get('/ajax/exit', async function (req, res, next) {
   var text, renk;
   if (req.session.user == undefined || req.session.user._id == undefined) {
     text = "Giriş bilgileriniz bulunamadı!";
@@ -409,14 +411,12 @@ router.post('/ajax/filter', async function (req, res, next) {
 
 })
 
-router.post('/ajax/notifications', async function (req, res, next) {
+router.get('/ajax/notifications', async function (req, res, next) {
   const db = req.app.locals.db;
-  var text, renk, status ,
-    _data = [];
+  var text="", status, _data = [];
   var user = req.session.user;
   try {
-    if (user == null || user._id == null)
-      throw "Kullanıcı bilgileriniz bulunamadı";
+    if (user == null || user._id == null) throw "Kullanıcı bilgileriniz bulunamadı";
     _data= await db.collection("Kullanıcı Konu Bildirimleri").aggregate([
       {
         $match:{user: user._id,readed: false}
@@ -443,20 +443,33 @@ router.post('/ajax/notifications', async function (req, res, next) {
       error=error.message;  
     text = error;
   }
-  if (status == undefined || status != 1) {
-    renk = "danger";
-  } else {
-    renk = "success";
-  }
   res.send({
     message: text,
     status: status,
-    color: renk,
     data: _data
   });
 });
 
-
+router.post('/ajax/readedNotification',async function(req, res, next){
+  const db = req.app.locals.db;
+  var text, status;
+  var user = req.session.user;
+  var id = req.body.id;
+  try {
+    if (user == null || user._id == null) throw "Kullanıcı bilgileriniz bulunamadı";
+    await db.collection("Kullanıcı Konu Bildirimleri").updateOne({_id: new ObjectId(id)}, {$set: {readed: true}})
+    status = 1;
+  } catch (error) {
+    status = 0;
+    if(error.message)
+      error = error.message;  
+    text = error;
+  }
+  res.send({
+    message: text,
+    status: status
+  });
+})
 /* #endregion */
 
 module.exports = router;

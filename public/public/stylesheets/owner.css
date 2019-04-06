@@ -294,3 +294,11 @@ th [type='number']{
 #notifCount{
 display: inline;
 }
+#Notifications > li > a > i{
+  margin-right:8px;
+}
+.simpleHr{
+  
+    border-top: 1px solid red;
+    margin: 2px 10px;
+}

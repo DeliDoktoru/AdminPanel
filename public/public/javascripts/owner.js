@@ -1,5 +1,6 @@
-var editor;
-var backPageUrl;
+var gEditor;
+var gBackPageUrl;
+var gNotifications;
 /* #region   pagination sıra ve max*/
 var pageIndex = 0,
   total = 5;
@@ -61,9 +62,9 @@ $(function () {
     }
   }
   if (links === undefined || links.length == 0 || links[links.length - 2] === undefined)
-    backPageUrl = "/";
+    gBackPageUrl = "/";
   else
-    backPageUrl = links[links.length - 2];
+    gBackPageUrl = links[links.length - 2];
   $(".content-title").html(tmp);
   /* #endregion */
   /* #region   text editor*/
@@ -88,8 +89,8 @@ $(function () {
     var options = {};
     if (container.getAttribute("readOnly") == "true")
       options.mode = 'view';
-    editor = new JSONEditor(container, options);
-    editor.set(json);
+    gEditor = new JSONEditor(container, options);
+    gEditor.set(json);
 
   }
   /* #endregion */
@@ -153,12 +154,61 @@ $(function () {
   });
   $("[h]").trigger("change");
   /* #endregion */
+
+  /* #region  notfication read */
+  $("#Notifications").delegate('>li','click',function(){
+    var id=$(this).attr("data-id");
+    if(!id) return;
+    tmp=gNotifications.find(x => x._id == id);
+    var confirm={
+      content: tmp.text,
+      theme: 'material',
+      type: 'blue',
+      title: tmp.design.title,
+      buttons: {
+        cancel: {
+          btnClass: 'btn-default',
+          text: 'KAPAT',
+          action: function () {}
+        }
+      }
+    }
+    if( tmp.link != null && tmp.link != "" ){
+      confirm.buttons.confirm= {
+        btnClass: 'btn-blue',
+        text: 'GİT',
+        action: function () {
+          location.href="/"+tmp.link;
+        }
+
+      }
+    }
+    $.confirm(confirm);
+    $.ajax({
+      type: "POST",
+      url: "/ajax/readedNotification",
+      dataType: "json",
+      data: { id : id},
+      success: function (result) {
+        if (result.status) getUserNotifications();
+        else console.log(result.text);
+      },
+      error: function (jqXHR, exception) {
+        console.log(jqXHR);
+        console.log(exception);
+      }
+    });
+  });
+
+  /* #endregion */
 });
 
 /* #region  get user Notifications */
-function getUserNotifications(){
+function getUserNotifications() {
+  if(window.location.pathname=="/")
+    return;
   $.ajax({
-    type: "POST",
+    type: "GET",
     url: "/ajax/notifications",
     dataType: "json",
     success: function (result) {
@@ -166,20 +216,27 @@ function getUserNotifications(){
         showNotification('top', 'right', 'info', result.text);
         return;
       }
-      var tmp="";
-      for(item of result.data){
-        tmp+=`<li><a href="#">${item.design.title}</a></li>`;
+      var tmp = "";
+      for (item of result.data) {
+        tmp += `<li data-id="${item._id}"><a href="#"><i class="${item.design.icon}"></i>${item.design.title}</a></li>`;
       }
-      if(result.data.length){
-        $("#bell").css({color:"green"});
+      if (result.data.length) {
+        $("#bell").css({
+          color: "green"
+        });
         $("#notifCount").text(result.data.length);
-      }
-      else{
-        $("#bell").css({color:"#9A9A9A"});
+        gNotifications=result.data;
+      } else {
+        $("#bell").css({
+          color: "#9A9A9A"
+        });
         $("#notifCount").text("")
       }
-
-
+      tmp+=`<hr class="simpleHr">
+              <li>
+              <a href="#">
+                <i class="ti-layers-alt"></i>
+                Bütün bildirimleri göster</a></li>`;
       $("#Notifications").html(tmp);
     },
     error: function (jqXHR, exception) {
@@ -194,7 +251,7 @@ setInterval(getUserNotifications, 60000);
 /* #region  Çıkış yap */
 function exit() {
   $.ajax({
-    type: "POST",
+    type: "GET",
     url: "/ajax/exit",
     dataType: "json",
     success: function (result) {
@@ -493,11 +550,11 @@ changeDocument = function (_method, _id, _collection, _data, goBackPage) {
       Cookies.set('color', result.color);
       Cookies.set('message', result.message);
       if (goBackPage)
-        location.href = backPageUrl;
+        location.href = gBackPageUrl;
       else if (_method == "delete")
         location.reload();
       else
-        location.href = backPageUrl;
+        location.href = gBackPageUrl;
 
       console.log(JSON.stringify(result));
     }
@@ -563,7 +620,7 @@ changeCollection = function (_method, _collectionName, _oldCollectionName, _opti
       if (_method == "delete")
         location.reload();
       else
-        location.href = backPageUrl;
+        location.href = gBackPageUrl;
 
       console.log(JSON.stringify(result));
     }
