@@ -2,7 +2,7 @@ extends layout
 
 block content
   .text-right.mb-4
-    button.ml-4.btn.btn-sm.btn-success(type='button',onclick=`changeCollection('${method}',$("[data-key='collectionName']").val(),$("[data-key='collectionName']").attr("oldValue"),${(method=="create"?"editor.get()":"''")})`) 
+    button.ml-4.btn.btn-sm.btn-success(type='button',onclick=`changeCollection('${method}',$("[data-key='collectionName']").val(),$("[data-key='collectionName']").attr("oldValue"),${(method=="create"?"gEditor.get()":"''")})`) 
       i.ti-check-box.mr-1    
       ="Kaydet"
     button.ml-4.btn.btn-sm.btn-danger(type='button',onclick=`location.href=gBackPageUrl`) 

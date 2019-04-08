@@ -356,11 +356,12 @@ module.exports = {
             return;
         var regex = /\{\$.*?\$\}/g;
         var founds = design.text.match(regex);
+        if(!founds) founds=[];
         for (user of Users) {
-            var txt = "";
+            var txt = design.text;
             for (found of founds) {
                 tmp = found.substring(2, found.length - 2);
-                txt = design.text.replaceAll("{\\$" + tmp + "\\$}", _data[tmp])
+                txt = txt.replaceAll("{\\$" + tmp + "\\$}", _data[tmp])
             }
             await _db.collection("Kullanıcı Konu Bildirimleri").insertOne({
                 user: user.user,

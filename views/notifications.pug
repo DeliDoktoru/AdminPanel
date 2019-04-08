@@ -11,10 +11,10 @@ block content
       .content
         each val,index in data
           if index%2
-            div(style="justify-content: space-around;display: flex;height: 300px;")
+            div(style="justify-content: space-around;display: flex;height: 100%;")
               div(style="width: 40%;overflow: auto;")
                 .card(style="background-color: #e8e8e8;")
-                  div(style="position: absolute;top:7;right:15")!=(val.When).toString().split(' ')[0]
+                  div(style="position: absolute;top:7;right:15")=val.When.substring(0,10)
                   .header
                     h4.title=val.title
                   .content!= val.text
@@ -23,18 +23,17 @@ block content
                 div(style="background: #a7a7a7;width: 3px;height: 100%;margin: auto;")
               div(style="width: 40%;")
           else
-            div(style="justify-content: space-around;display: flex;height: 300px;")
+            div(style="justify-content: space-around;display: flex;height: 100%;")
               div(style="width: 40%;")
               div.text-center(style="width: 20%;")
                 i.fa.fa-circle(style="font-size: 25px;",class=val.color)
                 div(style="background: #a7a7a7;width: 3px;height: 100%;margin: auto;")
               div(style="width: 40%;overflow: auto;")
                 .card(style="background-color: #e8e8e8;")
-                  div(style="position: absolute;top:7;right:15")!=(val.When).toString().split(' ')[0]
+                  div(style="position: absolute;top:7;right:15")=val.When.substring(0,10)
                   .header
                     h4.title=val.title
                   .content!= val.text
-        
         div(style="text-align: center;margin-top: 40px;font-size: 22px;color: #EB5E28;")              
           hr.simpleHr
           i.fa.ti-crown

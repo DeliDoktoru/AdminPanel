@@ -14,8 +14,6 @@ function dataState() {
 }
 /* #endregion */
 $(function () {
-
-
   /* #region   pagination*/
   function slide(offset) {
     pageIndex = Math.min(Math.max(pageIndex + offset, 0), total - 1);
@@ -30,7 +28,6 @@ $(function () {
     dataState();
   }
   /* #endregion */
-
   /* #region  notfication */
   if (Cookies.get('color') !== undefined && Cookies.get('color') !== undefined) {
     showNotification('top', 'right', Cookies.get('color'), Cookies.get('message'));
@@ -44,7 +41,6 @@ $(function () {
     str = str.substring(0, str.search('/'))
   $(".nav>li>a[href='/" + str + "']").parent().addClass("active")
   /* #endregion */
-
   /* #region  menu başlığı */
   var str = decodeURIComponent(window.location.pathname),
     matches = [],
@@ -143,7 +139,6 @@ $(function () {
     }
   });
   /* #endregion */
-  //>
   /* #region  helper */
   $("body").delegate("[h]", "change", function () {
     _helper = $(this).attr("h");
@@ -154,13 +149,12 @@ $(function () {
   });
   $("[h]").trigger("change");
   /* #endregion */
-
   /* #region  notfication read */
-  $("#Notifications").delegate('>li','click',function(){
-    var id=$(this).attr("data-id");
-    if(!id) return;
-    tmp=gNotifications.find(x => x._id == id);
-    var confirm={
+  $("#Notifications").delegate('>li', 'click', function () {
+    var id = $(this).attr("data-id");
+    if (!id) return;
+    tmp = gNotifications.find(x => x._id == id);
+    var confirm = {
       content: tmp.text,
       theme: 'material',
       type: 'blue',
@@ -173,12 +167,12 @@ $(function () {
         }
       }
     }
-    if( tmp.link != null && tmp.link != "" ){
-      confirm.buttons.confirm= {
+    if (tmp.link != null && tmp.link != "") {
+      confirm.buttons.confirm = {
         btnClass: 'btn-blue',
         text: 'GİT',
         action: function () {
-          location.href="/"+tmp.link;
+          location.href = "/" + tmp.link;
         }
 
       }
@@ -188,7 +182,9 @@ $(function () {
       type: "POST",
       url: "/ajax/readedNotification",
       dataType: "json",
-      data: { id : id},
+      data: {
+        id: id
+      },
       success: function (result) {
         if (result.status) getUserNotifications();
         else console.log(result.text);
@@ -205,7 +201,7 @@ $(function () {
 
 /* #region  get user Notifications */
 function getUserNotifications() {
-  if(window.location.pathname=="/")
+  if (window.location.pathname == "/")
     return;
   $.ajax({
     type: "GET",
@@ -225,14 +221,14 @@ function getUserNotifications() {
           color: "green"
         });
         $("#notifCount").text(result.data.length);
-        gNotifications=result.data;
+        gNotifications = result.data;
       } else {
         $("#bell").css({
           color: "#9A9A9A"
         });
         $("#notifCount").text("")
       }
-      tmp+=`<hr class="simpleHr">
+      tmp += `<hr class="simpleHr">
               <li>
               <a href="#">
                 <i class="ti-layers-alt"></i>

@@ -52,7 +52,33 @@ router.get('/duyuru', async function (req, res, next) {
   });
 });
 
-//router.get('/bildirimler',);
+router.get('/bildirimler',async function (req, res, next){
+  const db = req.app.locals.db;
+  var userId = req.session.user._id;
+  var _data = await db.collection("Kullanıcı Konu Bildirimleri").aggregate([
+    {
+      $match:{user: userId}
+    },
+    {
+      $lookup:{
+          from: "Tasarımlar",       
+          localField: "desginKey",   
+          foreignField: "key", 
+          as: "design"         
+      }
+    },
+    {  
+      $unwind:"$design" 
+    },
+    {
+      $project:{text:1,link:1,design:{title:1,icon:1}}
+    }
+  ]).toArray();
+  res.render('notifications', {
+    title: 'Bildirimler',
+    data: _data
+  });
+});
 
 router.get('/database/:collectionName', async function (req, res, next) {
   if (req.params.collectionName == "Yeni_Yığın")
@@ -324,7 +350,7 @@ router.post('/ajax/changeDocument', async function (req, res, next) {
         }));
         _data.items = JSON.parse(_data.items);
         _data.items._id = ObjectId(_data.id);
-        _data.items.When = new Date();
+        _data.items.When = (new Date().toLocaleString()).toString();
         _data.items.User = req.session.user.userName;
         (await db.collection(_data.collection).insertOne(_data.items));
         text = "Güncellendi!";
@@ -345,7 +371,7 @@ router.post('/ajax/changeDocument', async function (req, res, next) {
         break;
       case "create":
         _data.items = JSON.parse(_data.items);
-        _data.items.When = new Date();
+        _data.items.When = (new Date().toLocaleString()).toString();
         _data.items.User = req.session.user.userName;
         var r = (await db.collection(_data.collection).insertOne(_data.items));
         status.ok = 1;
