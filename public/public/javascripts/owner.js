@@ -230,7 +230,7 @@ function getUserNotifications() {
       }
       tmp += `<hr class="simpleHr">
               <li>
-              <a href="#">
+              <a href="/bildirimler">
                 <i class="ti-layers-alt"></i>
                 Bütün bildirimleri göster</a></li>`;
       $("#Notifications").html(tmp);
@@ -355,7 +355,7 @@ function controls() {
   return (enforcedControl() || maxMinControl())
 }
 /* #endregion */
-/* #region   loading animasyonu*/
+/* #region  loading animasyonu*/
 var stop = false;
 var _height = $(window).height();
 var _width = $(window).width();
@@ -383,7 +383,7 @@ function stopLoading() {
 }
 
 /* #endregion */
-/* #region   form view ini json çevirme */
+/* #region  form view ini json çevirme */
 var resultData = {};
 
 function viewToJson(row, data) {

@@ -367,9 +367,10 @@ module.exports = {
                 user: user.user,
                 text: txt,
                 desginKey: design.key,
-                link: _link,
+                link: "/"+_link,
                 topic: _topic,
-                readed: false
+                readed: false,
+                When:(new Date().toLocaleString()).toString()
             });
         }
     }, 

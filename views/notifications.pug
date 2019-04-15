@@ -10,30 +10,28 @@ block content
         p.category 
       .content
         each val,index in data
-          if index%2
-            div(style="justify-content: space-around;display: flex;height: 100%;")
-              div(style="width: 40%;overflow: auto;")
-                .card(style="background-color: #e8e8e8;")
-                  div(style="position: absolute;top:7;right:15")=val.When.substring(0,10)
-                  .header
-                    h4.title=val.title
-                  .content!= val.text
-              div.text-center(style="width: 20%;")
-                i.fa.fa-circle(style="font-size: 25px;",class=val.color)
-                div(style="background: #a7a7a7;width: 3px;height: 100%;margin: auto;")
-              div(style="width: 40%;")
-          else
-            div(style="justify-content: space-around;display: flex;height: 100%;")
-              div(style="width: 40%;")
-              div.text-center(style="width: 20%;")
-                i.fa.fa-circle(style="font-size: 25px;",class=val.color)
-                div(style="background: #a7a7a7;width: 3px;height: 100%;margin: auto;")
-              div(style="width: 40%;overflow: auto;")
-                .card(style="background-color: #e8e8e8;")
-                  div(style="position: absolute;top:7;right:15")=val.When.substring(0,10)
-                  .header
-                    h4.title=val.title
-                  .content!= val.text
+          .col-lg-12.col-sm-12
+            .card.a9c555
+              .header
+                h5=val.design.title
+              .content
+                .row
+                  .col-xs-11
+                    !=val.text
+                  .col-xs-1
+                    .icon-big.icon-info.text-center.pointerNone
+                      .btn.btn-sm.btn-info.btn-icon
+                        i.fa(class=val.design.icon)
+
+              .footer
+                hr
+                .stats.pl-5
+                  =(val.When).toString()
+                if(val.link !="" && val.link !=null)   
+                  .float-right.pr-1 
+                    a(href=val.link)
+                      i.fa.ti-arrow-right
         div(style="text-align: center;margin-top: 40px;font-size: 22px;color: #EB5E28;")              
           hr.simpleHr
           i.fa.ti-crown
+

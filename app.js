@@ -39,11 +39,14 @@ var accessLogStream = fs.createWriteStream(path.join(__dirname, 'access.log'), {
 })
 app.use(logger(function (tokens, req, res) {
   return [
+    (req.session && req.session.user && req.session.user.userName) || "anonymus",
     tokens.method(req, res),
     decodeURIComponent(tokens.url(req, res)),
     tokens.status(req, res),
     tokens.res(req, res, 'content-length'), '-',
-    tokens['response-time'](req, res), 'ms'
+    tokens['response-time'](req, res), 'ms',
+    JSON.stringify(req.body),
+    req.connection.remoteAddress
   ].join(' ')
 }, {
   skip: function (req, res) {
@@ -54,11 +57,14 @@ app.use(logger(function (tokens, req, res) {
 //console
 app.use(logger(function (tokens, req, res) {
   return [
+    (req.session && req.session.user && req.session.user.userName) || "anonymus",
     tokens.method(req, res),
     decodeURIComponent(tokens.url(req, res)),
     tokens.status(req, res),
     tokens.res(req, res, 'content-length'), '-',
-    tokens['response-time'](req, res), 'ms'
+    tokens['response-time'](req, res), 'ms',
+    JSON.stringify(req.body),
+    req.connection.remoteAddress
   ].join(' ')
 }, {
   skip: function (req, res) {

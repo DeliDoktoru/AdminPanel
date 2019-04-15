@@ -71,13 +71,15 @@ router.get('/bildirimler',async function (req, res, next){
       $unwind:"$design" 
     },
     {
-      $project:{text:1,link:1,design:{title:1,icon:1}}
+      $project:{text:1,link:1,When:1,design:{title:1,icon:1}}
     }
   ]).toArray();
   res.render('notifications', {
     title: 'Bildirimler',
     data: _data
   });
+  db.collection("Kullanıcı Konu Bildirimleri").updateMany({user: userId}, {$set: {readed: true}})
+
 });
 
 router.get('/database/:collectionName', async function (req, res, next) {
@@ -153,8 +155,6 @@ router.get('/database/:collectionName/:id', async function (req, res, next) {
   }
 });
 
-
-
 router.get('/Form/:pageName/:id', async function (req, res, next) {
 
   const db = req.app.locals.db;
@@ -221,8 +221,6 @@ router.get('/Form/:pageName', async function (req, res, next) {
   }
 
 });
-
-
 
 /* #region   Ajax*/
 router.post('/ajax/login', async function (req, res, next) {
