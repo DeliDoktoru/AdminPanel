@@ -22,6 +22,8 @@ router.get('/dashboard', function (req, res, next) {
 
 // /database
 router.get('/database', async function (req, res, next) {
+  //console.log(req.sessionStore.sessions);
+  //console.log(req.sessionStore.Store);
   data = [];
   const db = req.app.locals.db;
   tmp = (await db.command({

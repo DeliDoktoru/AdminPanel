@@ -1,0 +1,117 @@
+MongoDB shell version v4.0.5
+connecting to: mongodb://127.0.0.1:27017/x?gssapiServiceName=mongodb
+Implicit session: session { "id" : UUID("f8ae8272-c117-4a32-b003-1de94102f072") }
+MongoDB server version: 4.0.5
+[
+	{
+		"fields" : [
+			"User",
+			"When",
+			"_id",
+			"color",
+			"date",
+			"text",
+			"title"
+		],
+		"dbName" : "Duyurular"
+	},
+	{
+		"fields" : [
+			"User",
+			"When",
+			"_id",
+			"topics",
+			"user"
+		],
+		"dbName" : "Kullanıcı Bildirim Talepleri"
+	},
+	{
+		"fields" : [
+			"When",
+			"_id",
+			"desginKey",
+			"link",
+			"readed",
+			"text",
+			"topic",
+			"user"
+		],
+		"dbName" : "Kullanıcı Konu Bildirimleri"
+	},
+	{
+		"fields" : [
+			"User",
+			"When",
+			"_id",
+			"create",
+			"delete",
+			"gender",
+			"grup",
+			"password",
+			"update",
+			"userName"
+		],
+		"dbName" : "Kullanıcılar"
+	},
+	{
+		"fields" : [
+			"User",
+			"When",
+			"_id",
+			"content",
+			"name"
+		],
+		"dbName" : "Sabit Seçim Verileri"
+	},
+	{
+		"fields" : [
+			"User",
+			"When",
+			"_id",
+			"collection",
+			"content",
+			"icon",
+			"link",
+			"pageName",
+			"showMenu"
+		],
+		"dbName" : "Sayfalar"
+	},
+	{
+		"fields" : [
+			"User",
+			"When",
+			"_id",
+			"icon",
+			"key",
+			"text",
+			"title"
+		],
+		"dbName" : "Tasarımlar"
+	},
+	{
+		"fields" : [
+			"User",
+			"When",
+			"_id",
+			"allowedCollection",
+			"name"
+		],
+		"dbName" : "Yetki Grupları"
+	},
+	{
+		"fields" : [
+			"User",
+			"When",
+			"_id",
+			"dddd",
+			"ee",
+			"keya",
+			"keyb",
+			"keyc",
+			"q"
+		],
+		"dbName" : "test"
+	}
+]
+bye

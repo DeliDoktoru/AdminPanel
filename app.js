@@ -78,9 +78,10 @@ app.use(logger(function (tokens, req, res) {
 app.use(session({
   secret: '3D75D274B997B53CFD2892F69F54BC28',
   resave: false,
-  saveUninitialized: true,
+  saveUninitialized: true
   //cookie: { secure: true }
 }));
+
 
 /* #endregion */
 

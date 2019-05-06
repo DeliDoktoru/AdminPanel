@@ -11,13 +11,18 @@ var http = require('http');
 var config=require('../config');
 //database bağlantımızı sağlıyalım
 var MongoClient = require('mongodb').MongoClient;
-MongoClient.connect(config.database.url, { useNewUrlParser: true },function(err, client){
+MongoClient.connect(config.database.url, { useNewUrlParser: true },async function(err, client){
   if (err) 
     console.log(err);
   else {
     _db=client.db(config.database.dataBaseName);
     app.locals.db = _db
     console.log("Database Connection success..");
+
+    //GraphQLServer
+    const graphRun = require('../dbToGraphSchema/result.js')
+    graphRun(_db);
+
   }
 });
 

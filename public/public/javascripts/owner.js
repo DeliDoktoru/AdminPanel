@@ -209,7 +209,7 @@ function getUserNotifications() {
     dataType: "json",
     success: function (result) {
       if (!result.status) {
-        showNotification('top', 'right', 'info', result.text);
+        showNotification('top', 'right', 'info', result.message);
         return;
       }
       var tmp = "";
