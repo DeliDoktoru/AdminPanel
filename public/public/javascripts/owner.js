@@ -70,8 +70,6 @@ $(function () {
       replaceElementTag("[type='editor']", '<div></div>');
       $("[type='editor']").froalaEditor();
       $("[type='editor']").froalaEditor('html.set', inputHtml);
-
-
     }
   });
   /* #endregion */
